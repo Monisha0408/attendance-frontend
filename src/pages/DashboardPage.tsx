@@ -4,7 +4,6 @@ import { useGeolocation } from '../hooks/useGeolocation'
 import api from '../utils/api'
 import { AttendanceRecord } from '../types'
 import { format } from 'date-fns'
-import { MapPin, Clock } from 'lucide-react'
 
 function getGreeting() {
   const h = new Date().getHours()
@@ -29,9 +28,7 @@ export default function DashboardPage() {
     return () => clearInterval(t)
   }, [])
 
-  useEffect(() => {
-    fetchToday()
-  }, [])
+  useEffect(() => { fetchToday() }, [])
 
   const fetchToday = async () => {
     try {
@@ -99,55 +96,79 @@ export default function DashboardPage() {
       {error && <div className="alert alert-error">{error}</div>}
       {geoError && <div className="alert alert-info">{geoError}</div>}
 
-      <div className="checkin-card">
-        <div className="checkin-time">{format(time, 'HH:mm:ss')}</div>
-        <div className="checkin-date" style={{ marginTop: 4 }}>{format(time, 'EEEE, MMM d')}</div>
+      {/* Check-in card — navy with clearly visible white button */}
+      <div style={{
+        background: '#16213E',
+        border: '1px solid rgba(59,130,246,0.2)',
+        borderRadius: 12,
+        padding: '1.5rem',
+        marginBottom: '1.5rem',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{ position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)' }} />
+
+        <div style={{ fontSize: '2.2rem', fontWeight: 700, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>
+          {format(time, 'HH:mm:ss')}
+        </div>
+        <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', marginTop: 2, marginBottom: '1.25rem' }}>
+          {format(time, 'EEEE, MMM d')}
+        </div>
 
         {!loading && (
-          <div style={{ marginTop: '1rem' }}>
+          <>
             {!checkedIn && (
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '0.75rem' }}>
-                  <label style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>Work mode:</label>
+                  <label style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>Work mode:</label>
                   <select
                     value={workMode}
                     onChange={e => setWorkMode(e.target.value as 'office' | 'wfh')}
-                    style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, padding: '4px 8px', fontSize: '0.85rem', cursor: 'pointer' }}
+                    style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, padding: '4px 8px', fontSize: '0.85rem', cursor: 'pointer' }}
                   >
                     <option value="office" style={{ color: '#000' }}>Office</option>
                     <option value="wfh" style={{ color: '#000' }}>Work from home</option>
                   </select>
                 </div>
-                <div className="checkin-actions">
-                  <button className="btn-checkin" onClick={handleCheckin} disabled={actionLoading || geoLoading}>
-                    {actionLoading ? 'Checking in…' : '✓ Check in'}
-                  </button>
-                </div>
+                {/* WHITE button — clearly visible on dark navy */}
+                <button
+                  onClick={handleCheckin}
+                  disabled={actionLoading || geoLoading}
+                  style={{ background: '#fff', color: '#B91C1C', border: 'none', borderRadius: 8, padding: '0.6rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                >
+                  {actionLoading ? 'Checking in…' : '✓ Check in'}
+                </button>
               </>
             )}
+
             {checkedIn && !checkedOut && (
               <div>
-                <div className="checkin-status">
+                <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', marginBottom: '0.75rem' }}>
                   Checked in at {format(new Date(record!.checkin_time!), 'hh:mm a')}
                   {' · '}<span style={{ textTransform: 'capitalize' }}>{record?.work_mode}</span>
                 </div>
-                <button className="btn-checkout" onClick={handleCheckout} disabled={actionLoading || geoLoading}>
+                <button
+                  onClick={handleCheckout}
+                  disabled={actionLoading || geoLoading}
+                  style={{ background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, padding: '0.6rem 1.5rem', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}
+                >
                   {actionLoading ? 'Checking out…' : '✓ Check out'}
                 </button>
               </div>
             )}
+
             {checkedIn && checkedOut && (
               <div>
-                <div className="checkin-status">
-                  Checked in at {format(new Date(record!.checkin_time!), 'hh:mm a')} &nbsp;·&nbsp;
-                  Checked out at {format(new Date(record!.checkout_time!), 'hh:mm a')}
+                <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', marginBottom: '0.5rem' }}>
+                  In: {format(new Date(record!.checkin_time!), 'hh:mm a')} &nbsp;·&nbsp;
+                  Out: {format(new Date(record!.checkout_time!), 'hh:mm a')}
                 </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', padding: '0.4rem 0.8rem', borderRadius: 6, fontSize: '0.85rem', color: '#fff', marginTop: 4 }}>
-                  ✓ Done for today — see you tomorrow!
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', color: '#6EE7B7', padding: '0.4rem 0.9rem', borderRadius: 6, fontSize: '0.85rem' }}>
+                  ✓ Done for today
                 </div>
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
 
