@@ -35,9 +35,11 @@ export default function ChangePasswordPage() {
         current_password: form.current_password,
         new_password: form.new_password,
       })
-      // ✅ Update the user in context so must_change_password = false
+      // ✅ Update user in context + localStorage — clears must_change_password
       if (resolvedUser) {
-        refreshUser({ ...resolvedUser, must_change_password: false })
+        const updated = { ...resolvedUser, must_change_password: false }
+        localStorage.setItem('user', JSON.stringify(updated))
+        refreshUser(updated)
       }
       setSuccess(true)
       setTimeout(() => {
@@ -170,7 +172,7 @@ export default function ChangePasswordPage() {
               )}
               <button
                 type="submit"
-                disabled={loading || form.new_password !== form.confirm_password}
+                disabled={loading || (form.confirm_password !== '' && form.new_password !== form.confirm_password)}
                 style={isForced ? {
                   width: '100%', padding: '0.65rem', background: '#B91C1C', color: '#fff',
                   border: 'none', borderRadius: 8, fontSize: '0.9rem', fontWeight: 600,

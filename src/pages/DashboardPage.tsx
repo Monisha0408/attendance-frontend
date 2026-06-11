@@ -12,12 +12,12 @@ function getGreeting() {
   return 'Good evening'
 }
 
-interface DailyUpdateForm {
-  calls_assigned: string
-  calls_closed: string
-  calls_hold: string
-  calls_next_day: string
-  daily_update: string
+const EMPTY_FORM = {
+  calls_assigned: '',
+  calls_closed: '',
+  calls_hold: '',
+  calls_next_day: '',
+  daily_update: '',
 }
 
 export default function DashboardPage() {
@@ -27,17 +27,15 @@ export default function DashboardPage() {
   const resolvedUser = user || (stored ? JSON.parse(stored) : null)
 
   const [record, setRecord] = useState<AttendanceRecord | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [pageLoading, setPageLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [workMode, setWorkMode] = useState<'office' | 'wfh'>('office')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [time, setTime] = useState(new Date())
   const [showCheckout, setShowCheckout] = useState(false)
-  const [dailyForm, setDailyForm] = useState<DailyUpdateForm>({
-    calls_assigned: '', calls_closed: '', calls_hold: '', calls_next_day: '', daily_update: ''
-  })
-  const [formErrors, setFormErrors] = useState<Partial<DailyUpdateForm>>({})
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000)
@@ -53,7 +51,7 @@ export default function DashboardPage() {
     } catch (e: any) {
       if (e.response?.status !== 404) setError('Failed to load today\'s record')
     } finally {
-      setLoading(false)
+      setPageLoading(false)
     }
   }
 
@@ -78,20 +76,22 @@ export default function DashboardPage() {
     }
   }
 
-  const validateDailyForm = (): boolean => {
-    const errors: Partial<DailyUpdateForm> = {}
-    if (dailyForm.calls_assigned === '') errors.calls_assigned = 'Required'
-    if (dailyForm.calls_closed === '') errors.calls_closed = 'Required'
-    if (dailyForm.calls_hold === '') errors.calls_hold = 'Required'
-    if (dailyForm.calls_next_day === '') errors.calls_next_day = 'Required'
-    if (!dailyForm.daily_update.trim()) errors.daily_update = 'Required'
-    setFormErrors(errors)
-    return Object.keys(errors).length === 0
+  const validate = () => {
+    const errs: Record<string, string> = {}
+    // calls_assigned and calls_closed are required and must be >= 0
+    if (form.calls_assigned === '') errs.calls_assigned = 'Required'
+    if (form.calls_closed === '') errs.calls_closed = 'Required'
+    // ✅ calls_hold and calls_next_day can be zero — still required to be filled (even 0)
+    if (form.calls_hold === '') errs.calls_hold = 'Required (enter 0 if none)'
+    if (form.calls_next_day === '') errs.calls_next_day = 'Required (enter 0 if none)'
+    if (!form.daily_update.trim()) errs.daily_update = 'Required'
+    setFormErrors(errs)
+    return Object.keys(errs).length === 0
   }
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!validateDailyForm()) return
+    if (!validate()) return
     setActionLoading(true)
     setError('')
     setMessage('')
@@ -101,14 +101,16 @@ export default function DashboardPage() {
         latitude: geo?.latitude ?? null,
         longitude: geo?.longitude ?? null,
         location_name: geo?.location_name ?? null,
-        calls_assigned: parseInt(dailyForm.calls_assigned),
-        calls_closed: parseInt(dailyForm.calls_closed),
-        calls_hold: parseInt(dailyForm.calls_hold),
-        calls_next_day: parseInt(dailyForm.calls_next_day),
-        daily_update: dailyForm.daily_update.trim(),
+        calls_assigned: Number(form.calls_assigned),
+        calls_closed: Number(form.calls_closed),
+        calls_hold: Number(form.calls_hold),
+        calls_next_day: Number(form.calls_next_day),
+        daily_update: form.daily_update.trim(),
       })
       setRecord(data)
       setShowCheckout(false)
+      setForm(EMPTY_FORM)
+      setFormErrors({})
       setMessage('Checked out successfully!')
     } catch (e: any) {
       setError(e.response?.data?.detail || 'Check-out failed')
@@ -117,21 +119,27 @@ export default function DashboardPage() {
     }
   }
 
-  const setField = (k: keyof DailyUpdateForm, v: string) => {
-    setDailyForm(f => ({ ...f, [k]: v }))
-    setFormErrors(f => ({ ...f, [k]: undefined }))
+  const setField = (k: string, v: string) => {
+    setForm(f => ({ ...f, [k]: v }))
+    setFormErrors(f => { const n = { ...f }; delete n[k]; return n })
   }
 
   const checkedIn = !!record?.checkin_time
   const checkedOut = !!record?.checkout_time
 
-  const inputStyle = (hasError?: string) => ({
-    width: '100%', padding: '0.5rem 0.75rem',
-    border: `1px solid ${hasError ? 'var(--danger)' : 'rgba(255,255,255,0.15)'}`,
-    borderRadius: 7, fontSize: '0.875rem', color: '#EEF2FF',
-    background: 'rgba(255,255,255,0.07)', outline: 'none',
-    boxSizing: 'border-box' as const
-  })
+  // ✅ Dynamic placeholder — reminds about hold/next day reason
+  const getPlaceholder = () => {
+    const hold = Number(form.calls_hold) || 0
+    const next = Number(form.calls_next_day) || 0
+    let placeholder = 'Describe the key activities and updates for today…'
+    const extras = []
+    if (hold > 0) extras.push(`reason for ${hold} call${hold > 1 ? 's' : ''} on hold`)
+    if (next > 0) extras.push(`reason for ${next} call${next > 1 ? 's' : ''} shifted to next day`)
+    if (extras.length > 0) {
+      placeholder = `Describe today's activities. Include ${extras.join(' and ')}.`
+    }
+    return placeholder
+  }
 
   return (
     <>
@@ -144,12 +152,13 @@ export default function DashboardPage() {
       {error && <div className="alert alert-error">{error}</div>}
       {geoError && <div className="alert alert-info">{geoError}</div>}
 
-      {/* Check-in card */}
+      {/* Check-in / out card */}
       <div style={{
         background: '#16213E', border: '1px solid rgba(59,130,246,0.2)',
-        borderRadius: 12, padding: '1.5rem', marginBottom: '1.5rem', position: 'relative', overflow: 'hidden'
+        borderRadius: 12, padding: '1.5rem', marginBottom: '1.5rem',
+        position: 'relative', overflow: 'hidden',
       }}>
-        <div style={{ position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', top: -40, right: -40, width: 140, height: 140, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         <div style={{ fontSize: '2.2rem', fontWeight: 700, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>
           {format(time, 'HH:mm:ss')}
@@ -158,7 +167,7 @@ export default function DashboardPage() {
           {format(time, 'EEEE, MMM d')}
         </div>
 
-        {!loading && !checkedIn && (
+        {!pageLoading && !checkedIn && (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '0.75rem' }}>
               <label style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>Work mode:</label>
@@ -175,7 +184,8 @@ export default function DashboardPage() {
           </>
         )}
 
-        {!loading && checkedIn && !checkedOut && !showCheckout && (
+        {/* ✅ After checkin, not checked out, form not open yet */}
+        {!pageLoading && checkedIn && !checkedOut && !showCheckout && (
           <div>
             <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', marginBottom: '0.75rem' }}>
               Checked in at {format(new Date(record!.checkin_time!), 'hh:mm a')} · {record?.work_mode === 'wfh' ? 'WFH' : 'Office'}
@@ -187,7 +197,8 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {!loading && checkedIn && checkedOut && (
+        {/* ✅ Already checked out — show times */}
+        {!pageLoading && checkedIn && checkedOut && (
           <div>
             <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)', marginBottom: '0.5rem' }}>
               In: {format(new Date(record!.checkin_time!), 'hh:mm a')} · Out: {format(new Date(record!.checkout_time!), 'hh:mm a')}
@@ -199,50 +210,97 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* ✅ Checkout form — daily update mandatory */}
+      {/* ✅ Checkout form — shown below the card, not replacing it */}
       {showCheckout && (
         <div className="card" style={{ marginBottom: '1.5rem', border: '1px solid rgba(59,130,246,0.3)' }}>
-          <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>Daily update — required to check out</div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-            Fill in today's call statistics and summary before checking out.
+          <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+            Daily update — required to check out
           </div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+            Fill in today's call statistics. Enter 0 for calls on hold or shifted to next day if none.
+          </div>
+
           <form onSubmit={handleCheckout}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-              {([
-                { key: 'calls_assigned', label: 'Calls assigned' },
-                { key: 'calls_closed', label: 'Calls closed' },
-                { key: 'calls_hold', label: 'Calls on hold' },
-                { key: 'calls_next_day', label: 'Shifted to next day' },
-              ] as { key: keyof DailyUpdateForm; label: string }[]).map(({ key, label }) => (
-                <div key={key}>
-                  <label className="form-label">{label} <span style={{ color: 'var(--danger)' }}>*</span></label>
-                  <input
-                    className="form-input"
-                    type="number"
-                    min="0"
-                    value={dailyForm[key]}
-                    onChange={e => setField(key, e.target.value)}
-                    placeholder="0"
-                    style={{ borderColor: formErrors[key] ? 'var(--danger)' : '' }}
-                  />
-                  {formErrors[key] && <div className="form-error">{formErrors[key]}</div>}
-                </div>
-              ))}
+
+              {/* Calls assigned */}
+              <div>
+                <label className="form-label">Calls assigned <span style={{ color: 'var(--danger)' }}>*</span></label>
+                <input className="form-input" type="number" min="0"
+                  value={form.calls_assigned}
+                  onChange={e => setField('calls_assigned', e.target.value)}
+                  placeholder="0"
+                  style={formErrors.calls_assigned ? { borderColor: 'var(--danger)' } : {}} />
+                {formErrors.calls_assigned && <div className="form-error">{formErrors.calls_assigned}</div>}
+              </div>
+
+              {/* Calls closed */}
+              <div>
+                <label className="form-label">Calls closed <span style={{ color: 'var(--danger)' }}>*</span></label>
+                <input className="form-input" type="number" min="0"
+                  value={form.calls_closed}
+                  onChange={e => setField('calls_closed', e.target.value)}
+                  placeholder="0"
+                  style={formErrors.calls_closed ? { borderColor: 'var(--danger)' } : {}} />
+                {formErrors.calls_closed && <div className="form-error">{formErrors.calls_closed}</div>}
+              </div>
+
+              {/* Calls on hold — can be 0 */}
+              <div>
+                <label className="form-label">
+                  Calls on hold <span style={{ color: 'var(--danger)' }}>*</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}> (0 if none)</span>
+                </label>
+                <input className="form-input" type="number" min="0"
+                  value={form.calls_hold}
+                  onChange={e => setField('calls_hold', e.target.value)}
+                  placeholder="0"
+                  style={formErrors.calls_hold ? { borderColor: 'var(--danger)' } : {}} />
+                {formErrors.calls_hold && <div className="form-error">{formErrors.calls_hold}</div>}
+              </div>
+
+              {/* Shifted to next day — can be 0 */}
+              <div>
+                <label className="form-label">
+                  Shifted to next day <span style={{ color: 'var(--danger)' }}>*</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}> (0 if none)</span>
+                </label>
+                <input className="form-input" type="number" min="0"
+                  value={form.calls_next_day}
+                  onChange={e => setField('calls_next_day', e.target.value)}
+                  placeholder="0"
+                  style={formErrors.calls_next_day ? { borderColor: 'var(--danger)' } : {}} />
+                {formErrors.calls_next_day && <div className="form-error">{formErrors.calls_next_day}</div>}
+              </div>
+
             </div>
+
+            {/* ✅ Dynamic placeholder shows hold/next day reason reminder */}
             <div className="form-group">
-              <label className="form-label">Major update / summary <span style={{ color: 'var(--danger)' }}>*</span></label>
+              <label className="form-label">
+                Major update / summary <span style={{ color: 'var(--danger)' }}>*</span>
+              </label>
+              {(Number(form.calls_hold) > 0 || Number(form.calls_next_day) > 0) && (
+                <div style={{ fontSize: '0.78rem', color: 'var(--warning)', background: 'var(--warning-bg)', padding: '0.4rem 0.75rem', borderRadius: 6, marginBottom: 6 }}>
+                  ⚠ You have {Number(form.calls_hold) > 0 ? `${form.calls_hold} call(s) on hold` : ''}{Number(form.calls_hold) > 0 && Number(form.calls_next_day) > 0 ? ' and ' : ''}{Number(form.calls_next_day) > 0 ? `${form.calls_next_day} call(s) shifted to next day` : ''} — please include the reason in your summary below.
+                </div>
+              )}
               <textarea
                 className="form-input"
-                rows={3}
-                value={dailyForm.daily_update}
+                rows={4}
+                value={form.daily_update}
                 onChange={e => setField('daily_update', e.target.value)}
-                placeholder="Describe the key activities and updates for today…"
-                style={{ resize: 'vertical', borderColor: formErrors.daily_update ? 'var(--danger)' : '' }}
+                placeholder={getPlaceholder()}
+                style={{ resize: 'vertical', ...(formErrors.daily_update ? { borderColor: 'var(--danger)' } : {}) }}
               />
               {formErrors.daily_update && <div className="form-error">{formErrors.daily_update}</div>}
             </div>
+
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-              <button type="button" className="btn" onClick={() => setShowCheckout(false)}>Cancel</button>
+              <button type="button" className="btn"
+                onClick={() => { setShowCheckout(false); setFormErrors({}) }}>
+                Cancel
+              </button>
               <button type="submit" className="btn btn-primary" disabled={actionLoading || geoLoading}>
                 {actionLoading ? 'Checking out…' : '✓ Confirm checkout'}
               </button>
@@ -258,28 +316,38 @@ export default function DashboardPage() {
           <div>
             <div className="text-muted text-sm">Status</div>
             <div style={{ marginTop: 4 }}>
-              {!record ? <span className="badge badge-absent">Not checked in</span>
-                : record.status === 'present' ? <span className="badge badge-present">Present</span>
-                  : record.status === 'halfday' ? <span className="badge badge-halfday">Half day</span>
+              {!record
+                ? <span className="badge badge-absent">Not checked in</span>
+                : record.status === 'present'
+                  ? <span className="badge badge-present">Present</span>
+                  : record.status === 'halfday'
+                    ? <span className="badge badge-halfday">Half day</span>
                     : <span className="badge badge-absent">Absent</span>}
             </div>
           </div>
           <div>
             <div className="text-muted text-sm">Work mode</div>
             <div style={{ marginTop: 4 }}>
-              {record ? <span className={`badge badge-${record.work_mode}`}>{record.work_mode === 'wfh' ? 'WFH' : 'Office'}</span> : '—'}
+              {record
+                ? <span className={`badge badge-${record.work_mode}`}>{record.work_mode === 'wfh' ? 'WFH' : 'Office'}</span>
+                : '—'}
             </div>
           </div>
           <div>
             <div className="text-muted text-sm">Check-in</div>
-            <div style={{ marginTop: 2, fontWeight: 600 }}>{record?.checkin_time ? format(new Date(record.checkin_time), 'hh:mm a') : '—'}</div>
+            <div style={{ marginTop: 2, fontWeight: 600 }}>
+              {record?.checkin_time ? format(new Date(record.checkin_time), 'hh:mm a') : '—'}
+            </div>
           </div>
           <div>
             <div className="text-muted text-sm">Check-out</div>
-            <div style={{ marginTop: 2, fontWeight: 600 }}>{record?.checkout_time ? format(new Date(record.checkout_time), 'hh:mm a') : '—'}</div>
+            <div style={{ marginTop: 2, fontWeight: 600 }}>
+              {record?.checkout_time ? format(new Date(record.checkout_time), 'hh:mm a') : '—'}
+            </div>
           </div>
         </div>
 
+        {/* Call stats — shown only after checkout */}
         {record?.checkout_time && (
           <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
             <div className="card-title" style={{ marginBottom: '0.75rem' }}>Today's call stats</div>
@@ -291,14 +359,18 @@ export default function DashboardPage() {
                 { label: 'Next day', value: record.calls_next_day, color: 'var(--danger)' },
               ].map(({ label, value, color }) => (
                 <div key={label} style={{ background: 'var(--bg)', borderRadius: 8, padding: '0.6rem', textAlign: 'center', border: '1px solid var(--border)' }}>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 700, color }}>{value ?? '—'}</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 700, color }}>
+                    {value !== null && value !== undefined ? value : '—'}
+                  </div>
                   <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
                 </div>
               ))}
             </div>
             {record.daily_update && (
-              <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '0.75rem', border: '1px solid var(--border)', fontSize: '0.875rem', color: 'var(--text)' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4, fontWeight: 500 }}>MAJOR UPDATE</div>
+              <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '0.75rem', border: '1px solid var(--border)', fontSize: '0.875rem' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Major update
+                </div>
                 {record.daily_update}
               </div>
             )}
