@@ -12,6 +12,8 @@ export interface User {
   role: UserRole
   department: string | null
   is_active: boolean
+  is_superadmin: boolean
+  must_change_password: boolean
   created_at: string
 }
 
@@ -24,7 +26,11 @@ export interface AttendanceRecord {
   work_mode: WorkMode
   status: AttendanceStatus
   notes: string | null
-  // Admin-only fields
+  calls_assigned: number | null
+  calls_closed: number | null
+  calls_hold: number | null
+  calls_next_day: number | null
+  daily_update: string | null
   checkin_latitude?: number | null
   checkin_longitude?: number | null
   checkin_location_name?: string | null
@@ -65,4 +71,13 @@ export interface MonthlyReportRow {
   total_halfday: number
   total_leave: number
   total_wfh: number
+}
+
+export interface AuditLog {
+  id: string
+  action: string
+  target_id: string | null
+  detail: string | null
+  created_at: string
+  performed_by_name: string | null
 }

@@ -8,6 +8,7 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [today, setToday] = useState<AttendanceRecord[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     Promise.all([
@@ -16,6 +17,8 @@ export default function AdminDashboardPage() {
     ]).then(([s, t]) => {
       setStats(s.data)
       setToday(t.data)
+    }).catch(() => {
+      setError('Failed to load dashboard data. Please refresh.')
     }).finally(() => setLoading(false))
   }, [])
 
@@ -25,6 +28,8 @@ export default function AdminDashboardPage() {
         <div className="page-title">Admin dashboard</div>
         <div className="page-subtitle">{format(new Date(), 'EEEE, d MMMM yyyy')}</div>
       </div>
+
+      {error && <div className="alert alert-error">{error}</div>}
 
       {stats && (
         <div className="stats-grid">

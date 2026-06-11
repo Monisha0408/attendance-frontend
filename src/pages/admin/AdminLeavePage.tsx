@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import api from '../../utils/api'
 import { LeaveRequest } from '../../types'
+import { useAuth } from '../../context/AuthContext'
 import { format } from 'date-fns'
 import { CheckCircle, XCircle } from 'lucide-react'
 
@@ -12,6 +13,7 @@ function ReviewModal({ leave, action, onClose, onDone }: {
 }) {
   const [note, setNote] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const submit = async () => {
     setLoading(true)
@@ -19,7 +21,9 @@ function ReviewModal({ leave, action, onClose, onDone }: {
       await api.put(`/leave/${action}/${leave.id}`, { admin_note: note || null })
       onDone()
       onClose()
-    } catch {}
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed')
+    }
     setLoading(false)
   }
 
@@ -29,6 +33,7 @@ function ReviewModal({ leave, action, onClose, onDone }: {
         <div className="modal-title" style={{ color: action === 'approve' ? 'var(--success)' : 'var(--danger)' }}>
           {action === 'approve' ? 'Approve' : 'Reject'} leave request
         </div>
+        {error && <div className="alert alert-error">{error}</div>}
         <div style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
           <strong>{leave.user?.name}</strong> — {format(new Date(leave.from_date), 'dd MMM')} to {format(new Date(leave.to_date), 'dd MMM yyyy')}<br />
           <span style={{ color: 'var(--text-muted)' }}>{leave.reason}</span>
@@ -49,6 +54,11 @@ function ReviewModal({ leave, action, onClose, onDone }: {
 }
 
 export default function AdminLeavePage() {
+  const { user: ctxUser } = useAuth()
+  const stored = localStorage.getItem('user')
+  const me = ctxUser || (stored ? JSON.parse(stored) : null)
+  const isSuperAdmin = me?.is_superadmin === true
+
   const [tab, setTab] = useState<'pending' | 'all'>('pending')
   const [leaves, setLeaves] = useState<LeaveRequest[]>([])
   const [loading, setLoading] = useState(true)
@@ -66,8 +76,16 @@ export default function AdminLeavePage() {
     <>
       <div className="page-header">
         <div className="page-title">Leave requests</div>
-        <div className="page-subtitle">Review and approve employee leave</div>
+        <div className="page-subtitle">
+          {isSuperAdmin ? 'You can approve and reject leave requests' : 'View only — only super admin can approve/reject'}
+        </div>
       </div>
+
+      {!isSuperAdmin && (
+        <div className="alert alert-info" style={{ marginBottom: '1rem' }}>
+          Leave approval is restricted to super admin only. You can view requests but cannot approve or reject them.
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 8, marginBottom: '1.25rem' }}>
         <button className={`btn ${tab === 'pending' ? 'btn-primary' : ''}`} onClick={() => setTab('pending')}>Pending</button>
@@ -85,7 +103,7 @@ export default function AdminLeavePage() {
               <th>Days</th>
               <th>Reason</th>
               <th>Status</th>
-              {tab === 'pending' && <th>Actions</th>}
+              {isSuperAdmin && tab === 'pending' && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -109,7 +127,7 @@ export default function AdminLeavePage() {
                   <td>{days}d</td>
                   <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.reason}</td>
                   <td><span className={`badge badge-${l.status}`} style={{ textTransform: 'capitalize' }}>{l.status}</span></td>
-                  {tab === 'pending' && (
+                  {isSuperAdmin && tab === 'pending' && (
                     <td>
                       <div style={{ display: 'flex', gap: 6 }}>
                         <button className="btn btn-sm btn-success" onClick={() => setModal({ leave: l, action: 'approve' })}>
@@ -129,12 +147,7 @@ export default function AdminLeavePage() {
       </div>
 
       {modal && (
-        <ReviewModal
-          leave={modal.leave}
-          action={modal.action}
-          onClose={() => setModal(null)}
-          onDone={load}
-        />
+        <ReviewModal leave={modal.leave} action={modal.action} onClose={() => setModal(null)} onDone={load} />
       )}
     </>
   )

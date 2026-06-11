@@ -15,9 +15,13 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     try {
-      const user = await login(email, password)
-      // Explicit navigate immediately after login — no waiting for re-render
-      navigate(user.role === 'admin' ? '/admin' : '/dashboard', { replace: true })
+      const { user, must_change_password } = await login(email, password)
+      if (must_change_password) {
+        // ✅ Force to change password — can't go anywhere else
+        navigate('/change-password', { replace: true })
+      } else {
+        navigate(user.role === 'admin' ? '/admin' : '/dashboard', { replace: true })
+      }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Incorrect email or password.')
     }
@@ -42,7 +46,6 @@ export default function LoginPage() {
           <div style={{ width: 28, height: 3, borderRadius: 2, background: '#10B981' }} />
         </div>
       </div>
-
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', background: '#1C2B4A' }}>
         <div style={{ width: '100%', maxWidth: 380 }}>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#EEF2FF', marginBottom: 4 }}>Sign in</h2>
@@ -56,9 +59,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} noValidate>
               <div style={{ marginBottom: '1rem' }}>
                 <label htmlFor="email" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'rgba(238,242,255,0.65)', marginBottom: '0.4rem' }}>Email address</label>
-                <input
-                  id="email" name="email" type="email"
-                  value={email} onChange={e => setEmail(e.target.value)}
+                <input id="email" name="email" type="email" value={email} onChange={e => setEmail(e.target.value)}
                   placeholder="you@cbenterprises.in" required autoFocus
                   style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: '0.9rem', color: '#EEF2FF', background: 'rgba(255,255,255,0.05)', outline: 'none', boxSizing: 'border-box' }}
                   onFocus={e => e.target.style.borderColor = '#3B82F6'}
@@ -67,19 +68,15 @@ export default function LoginPage() {
               </div>
               <div style={{ marginBottom: '1.25rem' }}>
                 <label htmlFor="password" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'rgba(238,242,255,0.65)', marginBottom: '0.4rem' }}>Password</label>
-                <input
-                  id="password" name="password" type="password"
-                  value={password} onChange={e => setPassword(e.target.value)}
+                <input id="password" name="password" type="password" value={password} onChange={e => setPassword(e.target.value)}
                   placeholder="Your password" required
                   style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: '0.9rem', color: '#EEF2FF', background: 'rgba(255,255,255,0.05)', outline: 'none', boxSizing: 'border-box' }}
                   onFocus={e => e.target.style.borderColor = '#3B82F6'}
                   onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
                 />
               </div>
-              <button
-                type="submit" disabled={loading}
-                style={{ width: '100%', padding: '0.65rem', background: '#B91C1C', color: '#fff', border: 'none', borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
-              >
+              <button type="submit" disabled={loading}
+                style={{ width: '100%', padding: '0.65rem', background: '#B91C1C', color: '#fff', border: 'none', borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
                 {loading ? 'Signing in…' : 'Sign in'}
               </button>
             </form>

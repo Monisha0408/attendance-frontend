@@ -11,11 +11,17 @@ export default function AdminReportsPage() {
   const [rows, setRows] = useState<MonthlyReportRow[]>([])
   const [loading, setLoading] = useState(false)
   const [exportLoading, setExportLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [exportError, setExportError] = useState('')
+
+  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i)
 
   const load = () => {
     setLoading(true)
+    setError('')
     api.get('/reports/monthly', { params: { month, year } })
       .then(r => setRows(r.data))
+      .catch(() => setError('Failed to load report. Please try again.'))
       .finally(() => setLoading(false))
   }
 
@@ -23,6 +29,7 @@ export default function AdminReportsPage() {
 
   const exportFile = async (fmt: 'xlsx' | 'csv') => {
     setExportLoading(true)
+    setExportError('')
     try {
       const res = await api.get('/reports/export', {
         params: { month, year, format: fmt },
@@ -34,8 +41,11 @@ export default function AdminReportsPage() {
       a.download = `attendance_${year}_${String(month).padStart(2, '0')}.${fmt}`
       a.click()
       URL.revokeObjectURL(url)
-    } catch {}
-    setExportLoading(false)
+    } catch {
+      setExportError('Export failed. Please try again.')
+    } finally {
+      setExportLoading(false)
+    }
   }
 
   const totals = rows.reduce((acc, r) => ({
@@ -63,6 +73,9 @@ export default function AdminReportsPage() {
         </div>
       </div>
 
+      {error && <div className="alert alert-error">{error}</div>}
+      {exportError && <div className="alert alert-error">{exportError}</div>}
+
       <div style={{ display: 'flex', gap: 8, marginBottom: '1.25rem' }}>
         <select className="form-input form-select" style={{ width: 140 }} value={month} onChange={e => setMonth(+e.target.value)}>
           {Array.from({ length: 12 }, (_, i) => (
@@ -70,7 +83,7 @@ export default function AdminReportsPage() {
           ))}
         </select>
         <select className="form-input form-select" style={{ width: 100 }} value={year} onChange={e => setYear(+e.target.value)}>
-          {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(y => <option key={y} value={y}>{y}</option>)}
+          {years.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
 

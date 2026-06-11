@@ -2,11 +2,17 @@ import React, { createContext, useContext, useState, ReactNode } from 'react'
 import api from '../utils/api'
 import { User } from '../types'
 
+interface LoginResult {
+  user: User
+  must_change_password: boolean
+}
+
 interface AuthCtx {
   user: User | null
   token: string | null
-  login: (email: string, password: string) => Promise<User>
+  login: (email: string, password: string) => Promise<LoginResult>
   logout: () => void
+  refreshUser: (u: User) => void
   isAdmin: boolean
   loading: boolean
 }
@@ -23,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
   const [loading, setLoading] = useState(false)
 
-  const login = async (email: string, password: string): Promise<User> => {
+  const login = async (email: string, password: string): Promise<LoginResult> => {
     setLoading(true)
     try {
       const { data } = await api.post('/auth/login', { email, password })
@@ -31,7 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('user', JSON.stringify(data.user))
       setToken(data.access_token)
       setUser(data.user)
-      return data.user  // Return user so LoginPage can navigate immediately
+      return {
+        user: data.user,
+        must_change_password: data.must_change_password,
+      }
     } finally {
       setLoading(false)
     }
@@ -45,9 +54,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }
 
+  // Called after password change to update the user in state/localStorage
+  const refreshUser = (updatedUser: User) => {
+    localStorage.setItem('user', JSON.stringify(updatedUser))
+    setUser(updatedUser)
+  }
+
   return (
     <AuthContext.Provider value={{
-      user, token, login, logout,
+      user, token, login, logout, refreshUser,
       isAdmin: user?.role === 'admin',
       loading
     }}>

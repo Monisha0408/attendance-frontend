@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import api from '../../utils/api'
 import { User } from '../../types'
+import { useAuth } from '../../context/AuthContext'
 import { format } from 'date-fns'
-import { Plus, RefreshCw, UserX, Copy, Check } from 'lucide-react'
+import { Plus, RefreshCw, UserX, Copy, Check, ShieldCheck, ShieldOff } from 'lucide-react'
 
 interface NewUserForm {
   employee_id: string
@@ -12,7 +13,11 @@ interface NewUserForm {
   department: string
 }
 
-function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+function CreateUserModal({ onClose, onCreated, isSuperAdmin }: {
+  onClose: () => void
+  onCreated: () => void
+  isSuperAdmin: boolean
+}) {
   const [form, setForm] = useState<NewUserForm>({ employee_id: '', name: '', email: '', role: 'employee', department: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -45,12 +50,12 @@ function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
     return (
       <div className="modal-overlay">
         <div className="modal">
-          <div className="modal-title">Employee created</div>
+          <div className="modal-title">Employee created ✓</div>
           <div className="alert alert-success">
-            <strong>{created.user.name}</strong> has been added as {created.user.employee_id}.
+            <strong>{created.user.name}</strong> added as {created.user.employee_id}.
           </div>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-            Share this temporary password with the employee. It will not be shown again.
+            Share this temporary password. They will be asked to change it on first login.
           </p>
           <div className="password-reveal">{created.generated_password}</div>
           <p className="password-warn">⚠ Copy this now — it won't be shown again.</p>
@@ -80,7 +85,7 @@ function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
               <label className="form-label">Role</label>
               <select className="form-input form-select" value={form.role} onChange={e => set('role', e.target.value)}>
                 <option value="employee">Employee</option>
-                <option value="admin">Admin</option>
+                {isSuperAdmin && <option value="admin">Sub-Admin</option>}
               </select>
             </div>
           </div>
@@ -90,7 +95,7 @@ function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
           </div>
           <div className="form-group">
             <label className="form-label">Email</label>
-            <input className="form-input" type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="jane@company.com" required />
+            <input className="form-input" type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="jane@cbenterprises.in" required />
           </div>
           <div className="form-group">
             <label className="form-label">Department <span style={{ color: 'var(--text-muted)' }}>(optional)</span></label>
@@ -102,7 +107,7 @@ function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
           <div className="modal-actions">
             <button type="button" className="btn" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? 'Creating…' : 'Create employee'}
+              {loading ? 'Creating…' : 'Create'}
             </button>
           </div>
         </form>
@@ -134,11 +139,11 @@ function ResetPasswordModal({ user, onClose }: { user: User; onClose: () => void
   return (
     <div className="modal-overlay">
       <div className="modal">
-        <div className="modal-title">Reset password for {user.name}</div>
+        <div className="modal-title">Reset password — {user.name}</div>
         {!newPass ? (
           <>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-              This will immediately invalidate their current password and generate a new one. They will need to use the new password to log in.
+              This will immediately invalidate their current password and force them to set a new one on next login.
             </p>
             <div className="modal-actions">
               <button className="btn" onClick={onClose}>Cancel</button>
@@ -150,7 +155,7 @@ function ResetPasswordModal({ user, onClose }: { user: User; onClose: () => void
         ) : (
           <>
             <div className="password-reveal">{newPass}</div>
-            <p className="password-warn">⚠ Copy and share this now — it won't be shown again.</p>
+            <p className="password-warn">⚠ Copy and share now — won't be shown again.</p>
             <div className="modal-actions">
               <button className="btn" onClick={copy}>{copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}</button>
               <button className="btn btn-primary" onClick={onClose}>Done</button>
@@ -163,6 +168,11 @@ function ResetPasswordModal({ user, onClose }: { user: User; onClose: () => void
 }
 
 export default function AdminUsersPage() {
+  const { user: ctxUser } = useAuth()
+  const stored = localStorage.getItem('user')
+  const me = ctxUser || (stored ? JSON.parse(stored) : null)
+  const isSuperAdmin = me?.is_superadmin === true
+
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
@@ -177,8 +187,26 @@ export default function AdminUsersPage() {
 
   const deactivate = async (u: User) => {
     if (!confirm(`Deactivate ${u.name}? They won't be able to log in.`)) return
-    await api.delete(`/users/${u.id}`)
-    load()
+    try {
+      await api.delete(`/users/${u.id}`)
+      load()
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Failed to deactivate')
+    }
+  }
+
+  const promoteOrDemote = async (u: User) => {
+    const isAdmin = u.role === 'admin'
+    const msg = isAdmin
+      ? `Demote ${u.name} from sub-admin back to employee?`
+      : `Promote ${u.name} to sub-admin?`
+    if (!confirm(msg)) return
+    try {
+      await api.post(`/users/${u.id}/${isAdmin ? 'demote-employee' : 'promote-admin'}`)
+      load()
+    } catch (err: any) {
+      alert(err.response?.data?.detail || 'Failed')
+    }
   }
 
   return (
@@ -186,7 +214,9 @@ export default function AdminUsersPage() {
       <div className="page-header flex items-center justify-between">
         <div>
           <div className="page-title">Employees</div>
-          <div className="page-subtitle">{users.length} active · Add, manage, or reset passwords</div>
+          <div className="page-subtitle">
+            {isSuperAdmin ? 'Super admin — full access' : 'Sub-admin — employee management only'}
+          </div>
         </div>
         <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
           <Plus size={15} /> Add employee
@@ -212,19 +242,48 @@ export default function AdminUsersPage() {
             ) : users.map(u => (
               <tr key={u.id}>
                 <td className="font-mono" style={{ fontSize: '0.85rem' }}>{u.employee_id}</td>
-                <td style={{ fontWeight: 500 }}>{u.name}</td>
+                <td style={{ fontWeight: 500 }}>
+                  {u.name}
+                  {u.is_superadmin && (
+                    <span style={{ marginLeft: 6, fontSize: '0.7rem', background: 'var(--primary-light)', color: 'var(--primary)', padding: '1px 6px', borderRadius: 4 }}>
+                      Super Admin
+                    </span>
+                  )}
+                </td>
                 <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{u.email}</td>
                 <td style={{ color: 'var(--text-muted)' }}>{u.department || '—'}</td>
-                <td><span className={`badge badge-${u.role}`} style={{ textTransform: 'capitalize' }}>{u.role}</span></td>
-                <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{format(new Date(u.created_at), 'dd MMM yyyy')}</td>
+                <td>
+                  <span className={`badge badge-${u.role}`} style={{ textTransform: 'capitalize' }}>{u.role}</span>
+                </td>
+                <td style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                  {format(new Date(u.created_at), 'dd MMM yyyy')}
+                </td>
                 <td>
                   <div style={{ display: 'flex', gap: 6 }}>
                     <button className="btn btn-sm" onClick={() => setResetUser(u)} title="Reset password">
                       <RefreshCw size={13} />
                     </button>
-                    <button className="btn btn-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger-bg)' }} onClick={() => deactivate(u)} title="Deactivate">
-                      <UserX size={13} />
-                    </button>
+                    {/* Superadmin can promote/demote — but not themselves */}
+                    {isSuperAdmin && !u.is_superadmin && (
+                      <button
+                        className="btn btn-sm"
+                        style={{ color: u.role === 'admin' ? 'var(--warning)' : 'var(--info)' }}
+                        onClick={() => promoteOrDemote(u)}
+                        title={u.role === 'admin' ? 'Demote to employee' : 'Promote to sub-admin'}
+                      >
+                        {u.role === 'admin' ? <ShieldOff size={13} /> : <ShieldCheck size={13} />}
+                      </button>
+                    )}
+                    {!u.is_superadmin && (
+                      <button
+                        className="btn btn-sm"
+                        style={{ color: 'var(--danger)', borderColor: 'var(--danger-bg)' }}
+                        onClick={() => deactivate(u)}
+                        title="Deactivate"
+                      >
+                        <UserX size={13} />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -233,7 +292,7 @@ export default function AdminUsersPage() {
         </table>
       </div>
 
-      {showCreate && <CreateUserModal onClose={() => setShowCreate(false)} onCreated={load} />}
+      {showCreate && <CreateUserModal onClose={() => setShowCreate(false)} onCreated={load} isSuperAdmin={isSuperAdmin} />}
       {resetUser && <ResetPasswordModal user={resetUser} onClose={() => { setResetUser(null) }} />}
     </>
   )
