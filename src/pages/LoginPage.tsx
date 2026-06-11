@@ -11,11 +11,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     try {
-      await login(email, password)
+      const user = await login(email, password)
+      // Explicit navigate immediately after login — no waiting for re-render
+      navigate(user.role === 'admin' ? '/admin' : '/dashboard', { replace: true })
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Incorrect email or password.')
     }
@@ -30,23 +32,10 @@ export default function LoginPage() {
       }}>
         <div style={{ position: 'absolute', top: '25%', left: '50%', transform: 'translateX(-50%)', width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: '15%', right: '10%', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(185,28,28,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-
-        {/* Transparent owl — sits directly on navy, no black box */}
-        <img
-          src={CB_LOGO}
-          alt="CB Enterprises"
-          style={{ width: 180, height: 'auto', objectFit: 'contain', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}
-        />
-
-        <h1 style={{ color: '#EEF2FF', fontSize: '1.6rem', fontWeight: 800, textAlign: 'center', lineHeight: 1.2, marginBottom: 8, letterSpacing: '-0.02em', position: 'relative', zIndex: 1 }}>
-          CB Enterprises
-        </h1>
-        <p style={{ color: 'rgba(238,242,255,0.5)', fontSize: '0.78rem', textAlign: 'center', lineHeight: 2, position: 'relative', zIndex: 1 }}>
-          V-Guard · CCTV · Surveillance · Security
-        </p>
-        <p style={{ color: 'rgba(238,242,255,0.25)', fontSize: '0.72rem', textAlign: 'center', position: 'relative', zIndex: 1, marginTop: 2 }}>
-          Redhills, Chennai — 52
-        </p>
+        <img src={CB_LOGO} alt="CB Enterprises" style={{ width: 180, height: 'auto', objectFit: 'contain', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }} />
+        <h1 style={{ color: '#EEF2FF', fontSize: '1.6rem', fontWeight: 800, textAlign: 'center', lineHeight: 1.2, marginBottom: 8, letterSpacing: '-0.02em', position: 'relative', zIndex: 1 }}>CB Enterprises</h1>
+        <p style={{ color: 'rgba(238,242,255,0.5)', fontSize: '0.78rem', textAlign: 'center', lineHeight: 2, position: 'relative', zIndex: 1 }}>V-Guard · CCTV · Surveillance · Security</p>
+        <p style={{ color: 'rgba(238,242,255,0.25)', fontSize: '0.72rem', textAlign: 'center', position: 'relative', zIndex: 1, marginTop: 2 }}>Redhills, Chennai — 52</p>
         <div style={{ display: 'flex', gap: 6, marginTop: '1.75rem', position: 'relative', zIndex: 1 }}>
           <div style={{ width: 28, height: 3, borderRadius: 2, background: '#B91C1C' }} />
           <div style={{ width: 28, height: 3, borderRadius: 2, background: '#3B82F6' }} />
@@ -57,47 +46,45 @@ export default function LoginPage() {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', background: '#1C2B4A' }}>
         <div style={{ width: '100%', maxWidth: 380 }}>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#EEF2FF', marginBottom: 4 }}>Sign in</h2>
-          <p style={{ color: 'rgba(238,242,255,0.38)', fontSize: '0.875rem', marginBottom: '1.75rem' }}>
-            Enter your credentials to access the portal
-          </p>
+          <p style={{ color: 'rgba(238,242,255,0.38)', fontSize: '0.875rem', marginBottom: '1.75rem' }}>Enter your credentials to access the portal</p>
           <div style={{ background: '#223460', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '1.25rem' }}>
             {error && (
               <div style={{ background: 'rgba(185,28,28,0.15)', border: '1px solid rgba(185,28,28,0.3)', color: '#FCA5A5', padding: '0.75rem 1rem', borderRadius: 8, fontSize: '0.875rem', marginBottom: '1rem' }}>
                 {error}
               </div>
             )}
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'rgba(238,242,255,0.65)', marginBottom: '0.4rem' }}>Email address</label>
-              <input
-                style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: '0.9rem', color: '#EEF2FF', background: 'rgba(255,255,255,0.05)', outline: 'none' }}
-                type="email" value={email} onChange={e => setEmail(e.target.value)}
-                placeholder="you@cbenterprises.in" required autoFocus
-                onFocus={e => e.target.style.borderColor = '#3B82F6'}
-                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-              />
-            </div>
-            <div style={{ marginBottom: '1.25rem' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'rgba(238,242,255,0.65)', marginBottom: '0.4rem' }}>Password</label>
-              <input
-                style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: '0.9rem', color: '#EEF2FF', background: 'rgba(255,255,255,0.05)', outline: 'none' }}
-                type="password" value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="Your password" required
-                onFocus={e => e.target.style.borderColor = '#3B82F6'}
-                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-              />
-            </div>
-            <button
-              style={{ width: '100%', padding: '0.65rem', background: '#B91C1C', color: '#fff', border: 'none', borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
-              disabled={loading}
-              onMouseEnter={e => !loading && ((e.target as HTMLButtonElement).style.background = '#991B1B')}
-              onMouseLeave={e => ((e.target as HTMLButtonElement).style.background = '#B91C1C')}
-            >
-              {loading ? 'Signing in…' : 'Sign in'}
-            </button>
+            <form onSubmit={handleSubmit} noValidate>
+              <div style={{ marginBottom: '1rem' }}>
+                <label htmlFor="email" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'rgba(238,242,255,0.65)', marginBottom: '0.4rem' }}>Email address</label>
+                <input
+                  id="email" name="email" type="email"
+                  value={email} onChange={e => setEmail(e.target.value)}
+                  placeholder="you@cbenterprises.in" required autoFocus
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: '0.9rem', color: '#EEF2FF', background: 'rgba(255,255,255,0.05)', outline: 'none', boxSizing: 'border-box' }}
+                  onFocus={e => e.target.style.borderColor = '#3B82F6'}
+                  onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                />
+              </div>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label htmlFor="password" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'rgba(238,242,255,0.65)', marginBottom: '0.4rem' }}>Password</label>
+                <input
+                  id="password" name="password" type="password"
+                  value={password} onChange={e => setPassword(e.target.value)}
+                  placeholder="Your password" required
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: '0.9rem', color: '#EEF2FF', background: 'rgba(255,255,255,0.05)', outline: 'none', boxSizing: 'border-box' }}
+                  onFocus={e => e.target.style.borderColor = '#3B82F6'}
+                  onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                />
+              </div>
+              <button
+                type="submit" disabled={loading}
+                style={{ width: '100%', padding: '0.65rem', background: '#B91C1C', color: '#fff', border: 'none', borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}
+              >
+                {loading ? 'Signing in…' : 'Sign in'}
+              </button>
+            </form>
           </div>
-          <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'rgba(238,242,255,0.22)' }}>
-            Forgot your password? Contact your admin.
-          </p>
+          <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'rgba(238,242,255,0.22)' }}>Forgot your password? Contact your admin.</p>
         </div>
       </div>
     </div>

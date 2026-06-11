@@ -40,7 +40,7 @@ export default function AttendanceHistoryPage() {
             ))}
           </select>
           <select className="form-input form-select" style={{ width: 'auto' }} value={year} onChange={e => setYear(+e.target.value)}>
-            {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
+            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(y => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
       </div>

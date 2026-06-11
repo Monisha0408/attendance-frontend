@@ -29,17 +29,22 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   const { user } = useAuth()
+
+  // Safe default — never null-deref
+  const homeRoute = user?.role === 'admin' ? '/admin' : '/dashboard'
+
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} replace /> : <LoginPage />} />
+      <Route
+        path="/login"
+        element={user ? <Navigate to={homeRoute} replace /> : <LoginPage />}
+      />
       <Route path="/" element={<RequireAuth><Shell /></RequireAuth>}>
-        {/* Employee routes */}
-        <Route index element={<Navigate to={user?.role === 'admin' ? '/admin' : '/dashboard'} replace />} />
+        <Route index element={<Navigate to={homeRoute} replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="attendance" element={<AttendanceHistoryPage />} />
         <Route path="leave/apply" element={<LeaveApplyPage />} />
         <Route path="leave/history" element={<LeaveHistoryPage />} />
-        {/* Admin routes */}
         <Route path="admin" element={<RequireAdmin><AdminDashboardPage /></RequireAdmin>} />
         <Route path="admin/users" element={<RequireAdmin><AdminUsersPage /></RequireAdmin>} />
         <Route path="admin/leave" element={<RequireAdmin><AdminLeavePage /></RequireAdmin>} />

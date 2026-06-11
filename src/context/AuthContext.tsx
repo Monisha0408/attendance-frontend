@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, ReactNode } from 'react'
 import api from '../utils/api'
 import { User } from '../types'
 
 interface AuthCtx {
   user: User | null
   token: string | null
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<User>
   logout: () => void
   isAdmin: boolean
   loading: boolean
@@ -15,13 +15,15 @@ const AuthContext = createContext<AuthCtx | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
-    const s = localStorage.getItem('user')
-    return s ? JSON.parse(s) : null
+    try {
+      const s = localStorage.getItem('user')
+      return s ? JSON.parse(s) : null
+    } catch { return null }
   })
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
   const [loading, setLoading] = useState(false)
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User> => {
     setLoading(true)
     try {
       const { data } = await api.post('/auth/login', { email, password })
@@ -29,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('user', JSON.stringify(data.user))
       setToken(data.access_token)
       setUser(data.user)
+      return data.user  // Return user so LoginPage can navigate immediately
     } finally {
       setLoading(false)
     }
@@ -43,7 +46,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAdmin: user?.role === 'admin', loading }}>
+    <AuthContext.Provider value={{
+      user, token, login, logout,
+      isAdmin: user?.role === 'admin',
+      loading
+    }}>
       {children}
     </AuthContext.Provider>
   )
