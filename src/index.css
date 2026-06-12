@@ -222,85 +222,89 @@ textarea.form-input { font-family: var(--font); }
 /* ═══════════════════════════════════════════════════════
    MOBILE LAYOUT — scrollable bottom nav, no hamburger
    ═══════════════════════════════════════════════════════ */
-/* Hide mobile topbar on desktop */
-.mobile-topbar {
-  display: none;
-}
+/* ════════════════════════════════════════════
+   MOBILE — header + bottom nav
+   ════════════════════════════════════════════ */
+
+/* Hide on desktop */
+.mobile-header { display: none; }
+.mobile-nav    { display: none; }
 
 @media (max-width: 768px) {
+
   /* Hide desktop sidebar */
   .sidebar { display: none !important; }
 
-  /* Space for bottom nav bar */
+  /* Gap for fixed header (52px) + bottom nav (60px) */
   .main-content { padding-bottom: 68px; }
   .page { padding: 1rem; }
 
-  /* Stats grid — 2 columns */
+  /* Stats */
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  /* Mobile top header */
-  .mobile-topbar {
+
+  /* Tables scroll */
+  .table-wrap { overflow-x: auto; font-size: 0.78rem; }
+  th, td { padding: 0.5rem; }
+
+  /* ── Top header bar ── */
+  .mobile-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    height: 52px;
     background: #16213E;
-    padding: 0.6rem 1rem;
+    padding: 0 1rem;
     border-bottom: 1px solid rgba(255,255,255,0.08);
     position: sticky;
     top: 0;
     z-index: 50;
   }
 
-  .mobile-topbar-left {
+  .mobile-header-brand {
     display: flex;
     align-items: center;
     gap: 8px;
   }
 
-  .mobile-topbar-left img {
-    width: 30px;
-    height: 30px;
+  .mobile-header-brand img {
+    width: 28px;
+    height: 28px;
     object-fit: contain;
   }
 
-  .mobile-topbar-name {
-    color: #fff;
-    font-size: 0.82rem;
-    font-weight: 600;
+  .mobile-header-text {
+    display: flex;
+    flex-direction: column;
     line-height: 1.2;
   }
 
-  .mobile-topbar-role {
-    color: rgba(255,255,255,0.45);
-    font-size: 0.68rem;
+  .mobile-header-title {
+    color: #EEF2FF;
+    font-size: 0.85rem;
+    font-weight: 700;
   }
 
-  .mobile-logout-btn {
+  .mobile-header-sub {
+    color: rgba(255,255,255,0.45);
+    font-size: 0.65rem;
+  }
+
+  /* Logout icon — top right */
+  .mobile-header-logout {
     display: flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
     background: rgba(185,28,28,0.2);
-    border: 1px solid rgba(185,28,28,0.4);
+    border: 1px solid rgba(185,28,28,0.35);
     color: #FCA5A5;
-    border-radius: 7px;
-    padding: 0.4rem 0.7rem;
-    font-size: 0.75rem;
-    font-weight: 600;
     cursor: pointer;
+    flex-shrink: 0;
   }
 
-
-
-  /* Tables scroll horizontally */
-  .table-wrap { overflow-x: auto; font-size: 0.78rem; }
-  th, td { padding: 0.5rem 0.5rem; }
-}
-
-/* ── Mobile bottom nav bar ── */
-.mobile-nav {
-  display: none;
-}
-
-@media (max-width: 768px) {
+  /* ── Bottom nav bar ── */
   .mobile-nav {
     display: flex;
     position: fixed;
@@ -311,19 +315,15 @@ textarea.form-input { font-family: var(--font); }
     background: #16213E;
     border-top: 1px solid rgba(255,255,255,0.1);
     z-index: 100;
-    /* ✅ Horizontal scroll so ALL tabs are accessible */
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* hide scrollbar Firefox */
+    scrollbar-width: none;
   }
 
-  .mobile-nav::-webkit-scrollbar {
-    display: none; /* hide scrollbar Chrome/Safari */
-  }
+  .mobile-nav::-webkit-scrollbar { display: none; }
 
   .mobile-nav-item {
-    /* ✅ Fixed minimum width so items don't compress */
     flex: 0 0 72px;
     min-width: 72px;
     display: flex;
@@ -340,8 +340,8 @@ textarea.form-input { font-family: var(--font); }
     cursor: pointer;
     padding: 0;
     border-top: 2px solid transparent;
-    transition: color 0.15s;
     white-space: nowrap;
+    transition: color 0.15s;
   }
 
   .mobile-nav-item.active {
@@ -355,6 +355,5 @@ textarea.form-input { font-family: var(--font); }
     height: 20px;
     flex-shrink: 0;
   }
-}
 
-/* Textarea inherits form-input but needs explicit font */
+}

@@ -84,22 +84,21 @@ export default function Shell({ children }: { children?: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* ── Mobile top header — logo + name + logout ── */}
-      <div className="mobile-topbar">
-        <div className="mobile-topbar-left">
+      {/* ── Mobile header ── */}
+      <header className="mobile-header">
+        <div className="mobile-header-brand">
           <img src={CB_LOGO} alt="CB" />
-          <div>
-            <div className="mobile-topbar-name">{user?.name}</div>
-            <div className="mobile-topbar-role">
+          <div className="mobile-header-text">
+            <span className="mobile-header-title">CB Enterprises</span>
+            <span className="mobile-header-sub">
               {isSuperAdmin ? 'Super Admin' : isAdmin ? 'Sub Admin' : user?.employee_id}
-            </div>
+            </span>
           </div>
         </div>
-        <button className="mobile-logout-btn" onClick={handleLogout}>
-          <LogOut size={18} />
-          <span>Sign out</span>
+        <button className="mobile-header-logout" onClick={handleLogout} title="Sign out">
+          <LogOut size={17} />
         </button>
-      </div>
+      </header>
 
       {/* ── Main content ── */}
       <main className="main-content">
@@ -108,7 +107,7 @@ export default function Shell({ children }: { children?: React.ReactNode }) {
         </div>
       </main>
 
-      {/* ── Mobile bottom nav — all tabs, horizontally scrollable ── */}
+      {/* ── Mobile bottom nav ── */}
       <nav className="mobile-nav">
         {links.map(({ to, icon: Icon, label }) => (
           <NavLink
