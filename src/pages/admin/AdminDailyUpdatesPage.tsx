@@ -206,8 +206,7 @@ export default function AdminDailyUpdatesPage() {
         </table>
       </div>
 
-      {records.length > 0 && (
-        {Math.ceil(records.length / PAGE_SIZE) > 1 && (
+      {Math.ceil(records.length / PAGE_SIZE) > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: '1rem' }}>
           <button className="btn btn-sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
           <span style={{ lineHeight: '32px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Page {page}/{Math.ceil(records.length/PAGE_SIZE)}</span>
@@ -215,9 +214,8 @@ export default function AdminDailyUpdatesPage() {
         </div>
       )}
       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 8 }}>
-          Click any row to expand the major update summary
-        </div>
-      )}
+        Click any row to expand the major update summary
+      </div>
     </>
   )
 }
