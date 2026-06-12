@@ -176,14 +176,26 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
+  const [search, setSearch] = useState('')
   const [resetUser, setResetUser] = useState<User | null>(null)
+
+  const [showInactive, setShowInactive] = useState(false)
 
   const load = () => {
     setLoading(true)
-    api.get('/users').then(r => setUsers(r.data)).finally(() => setLoading(false))
+    api.get('/users', { params: { include_inactive: showInactive } })
+      .then(r => setUsers(r.data)).finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [showInactive])
+
+  const reactivate = async (u: User) => {
+    if (!confirm(`Reactivate ${u.name}? They will be able to log in again.`)) return
+    try {
+      await api.post(`/users/${u.id}/reactivate`)
+      load()
+    } catch (err: any) { alert(err.response?.data?.detail || 'Failed') }
+  }
 
   const deactivate = async (u: User) => {
     if (!confirm(`Deactivate ${u.name}? They won't be able to log in.`)) return
@@ -220,7 +232,19 @@ export default function AdminUsersPage() {
         </div>
         <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
           <Plus size={15} /> Add employee
-        </button>
+          </button>
+        </div>
+      </div>
+
+      {/* ✅ Search box */}
+      <div style={{ marginBottom: '1rem' }}>
+        <input
+          className="form-input"
+          placeholder="Search by name or employee ID…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ maxWidth: 320 }}
+        />
       </div>
 
       <div className="table-wrap">
@@ -239,7 +263,11 @@ export default function AdminUsersPage() {
           <tbody>
             {loading ? (
               <tr><td colSpan={7} className="loading">Loading…</td></tr>
-            ) : users.map(u => (
+            ) : users.filter(u =>
+                !search ||
+                u.name.toLowerCase().includes(search.toLowerCase()) ||
+                u.employee_id.toLowerCase().includes(search.toLowerCase())
+              ).map(u => (
               <tr key={u.id}>
                 <td className="font-mono" style={{ fontSize: '0.85rem' }}>{u.employee_id}</td>
                 <td style={{ fontWeight: 500 }}>
@@ -274,14 +302,18 @@ export default function AdminUsersPage() {
                         {u.role === 'admin' ? <ShieldOff size={13} /> : <ShieldCheck size={13} />}
                       </button>
                     )}
-                    {!u.is_superadmin && (
-                      <button
-                        className="btn btn-sm"
+                    {!u.is_superadmin && u.is_active && (
+                      <button className="btn btn-sm"
                         style={{ color: 'var(--danger)', borderColor: 'var(--danger-bg)' }}
-                        onClick={() => deactivate(u)}
-                        title="Deactivate"
-                      >
+                        onClick={() => deactivate(u)} title="Deactivate">
                         <UserX size={13} />
+                      </button>
+                    )}
+                    {!u.is_superadmin && !u.is_active && (
+                      <button className="btn btn-sm"
+                        style={{ color: 'var(--success)', borderColor: 'var(--success-bg)' }}
+                        onClick={() => reactivate(u)} title="Reactivate">
+                        ↩
                       </button>
                     )}
                   </div>

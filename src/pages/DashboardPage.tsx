@@ -5,6 +5,8 @@ import api from '../utils/api'
 import { AttendanceRecord, SpareFromOffice, SpareFromOutside, SpareRequired } from '../types'
 import { format } from 'date-fns'
 import { Plus, Trash2, Upload, X, FileText, Image } from 'lucide-react'
+import { format as fmtDate, getMonth, getYear } from 'date-fns'
+import { useHolidays } from '../hooks/useHolidays'
 
 function getGreeting() {
   const h = new Date().getHours()
@@ -47,6 +49,9 @@ export default function DashboardPage() {
   const [sparesOutside, setSparesOutside] = useState<SpareFromOutside[]>([])
   const [sparesRequired, setSparesRequired] = useState<SpareRequired[]>([])
   const [bills, setBills] = useState<BillFile[]>([])
+  const [monthStats, setMonthStats] = useState<{present:number,absent:number,halfday:number,leave:number} | null>(null)
+  const [streak, setStreak] = useState<{streak:number,best:number} | null>(null)
+  const { isHoliday, isSunday } = useHolidays()
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000)

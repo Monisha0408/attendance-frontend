@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import api from '../../utils/api'
+import { Download } from 'lucide-react'
 import { AttendanceRecord } from '../../types'
 import { format } from 'date-fns'
 import { ChevronDown, ChevronRight } from 'lucide-react'
@@ -11,6 +12,24 @@ export default function AdminDailyUpdatesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [exporting, setExporting] = useState<string | null>(null)
+
+  const exportUpdates = async (fmt: 'pdf' | 'xlsx') => {
+    setExporting(fmt)
+    try {
+      const res = await api.get('/reports/daily-updates/export', {
+        params: { export_date: date, format: fmt },
+        responseType: 'blob',
+      })
+      const url = URL.createObjectURL(res.data)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `updates_${date}.${fmt}`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch { alert('Export failed') }
+    finally { setExporting(null) }
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -39,14 +58,22 @@ export default function AdminDailyUpdatesPage() {
           <div className="page-title">Daily updates</div>
           <div className="page-subtitle">Call stats and updates submitted at checkout</div>
         </div>
-        <input
-          type="date"
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button className="btn" onClick={() => exportUpdates('pdf')} disabled={exporting !== null}>
+            <Download size={14} /> {exporting === 'pdf' ? 'Exporting…' : 'PDF'}
+          </button>
+          <button className="btn" onClick={() => exportUpdates('xlsx')} disabled={exporting !== null}>
+            <Download size={14} /> {exporting === 'xlsx' ? 'Exporting…' : 'Excel'}
+          </button>
+          <input
+            type="date"
           className="form-input"
           style={{ width: 'auto' }}
           value={date}
           max={format(today, 'yyyy-MM-dd')}
           onChange={e => setDate(e.target.value)}
-        />
+          />
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}

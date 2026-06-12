@@ -1,6 +1,8 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
+import MyUpdatesPage from './pages/MyUpdatesPage'
 import Shell from './components/Shell'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
@@ -15,6 +17,7 @@ import AdminAttendancePage from './pages/admin/AdminAttendancePage'
 import AdminReportsPage from './pages/admin/AdminReportsPage'
 import AdminDailyUpdatesPage from './pages/admin/AdminDailyUpdatesPage'
 import AuditLogsPage from './pages/admin/AuditLogsPage'
+import AdminAttendanceEditPage from './pages/admin/AdminAttendanceEditPage'
 import './index.css'
 
 // Always read from localStorage fresh — context state may lag on refresh
@@ -87,6 +90,7 @@ function AppRoutes() {
         <Route path="attendance" element={<AttendanceHistoryPage />} />
         <Route path="leave/apply" element={<LeaveApplyPage />} />
         <Route path="leave/history" element={<LeaveHistoryPage />} />
+        <Route path="my-updates" element={<MyUpdatesPage />} />
         <Route path="admin" element={<RequireAdmin><AdminDashboardPage /></RequireAdmin>} />
         <Route path="admin/users" element={<RequireAdmin><AdminUsersPage /></RequireAdmin>} />
         <Route path="admin/leave" element={<RequireAdmin><AdminLeavePage /></RequireAdmin>} />
@@ -94,6 +98,7 @@ function AppRoutes() {
         <Route path="admin/reports" element={<RequireAdmin><AdminReportsPage /></RequireAdmin>} />
         <Route path="admin/daily-updates" element={<RequireAdmin><AdminDailyUpdatesPage /></RequireAdmin>} />
         <Route path="admin/audit" element={<RequireSuperAdmin><AuditLogsPage /></RequireSuperAdmin>} />
+        <Route path="admin/attendance/edit/:recordId" element={<RequireAdmin><AdminAttendanceEditPage /></RequireAdmin>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
@@ -103,9 +108,11 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
+      <ThemeProvider>
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   )
 }

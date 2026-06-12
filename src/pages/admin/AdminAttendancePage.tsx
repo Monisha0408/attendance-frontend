@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import api from '../../utils/api'
 import { AttendanceRecord, User } from '../../types'
 import { format, getMonth, getYear } from 'date-fns'
-import { MapPin, ChevronDown, ChevronRight } from 'lucide-react'
+import { MapPin, ChevronDown, ChevronRight, Edit } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 function LocationCell({ name, lat, lng }: { name?: string | null; lat?: number | null; lng?: number | null }) {
   if (name) return <span className="location-pill"><MapPin size={11} />{name}</span>
@@ -11,6 +12,7 @@ function LocationCell({ name, lat, lng }: { name?: string | null; lat?: number |
 }
 
 export default function AdminAttendancePage() {
+  const navigate = useNavigate()
   const now = new Date()
   const [users, setUsers] = useState<User[]>([])
   const [selectedUser, setSelectedUser] = useState('')
@@ -115,6 +117,14 @@ export default function AdminAttendancePage() {
                       <td><span className={`badge badge-${r.work_mode}`}>{r.work_mode === 'wfh' ? 'WFH' : 'Office'}</span></td>
                       <td style={{ fontVariantNumeric: 'tabular-nums' }}>{hours}</td>
                       <td><span className={`badge badge-${r.status}`} style={{ textTransform: 'capitalize' }}>{r.status}</span></td>
+                      <td>
+                        {r.checkin_time && !r.checkout_time && (
+                          <button className="btn btn-sm" title="Add checkout"
+                            onClick={() => navigate(`/admin/attendance/edit/${r.id}`)}>
+                            <Edit size={13} /> Fix
+                          </button>
+                        )}
+                      </td>
                     </tr>
                     {isExpanded && r.daily_update && (
                       <tr>

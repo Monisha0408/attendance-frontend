@@ -236,7 +236,7 @@ textarea.form-input { font-family: var(--font); }
   .sidebar { display: none !important; }
 
   /* Gap for bottom nav */
-  .main-content { padding-bottom: 68px; background: #16213E; }
+  .main-content { background: #16213E; }
   .page { padding: 1rem; }
 
   /* Light body background on mobile */
@@ -286,13 +286,16 @@ textarea.form-input { font-family: var(--font); }
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 60px;
+    height: 56px;
+    min-height: 56px;
     background: #16213E;
-    padding: 0 0.5rem;
+    padding: 0 0.25rem;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 200;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .mobile-header-brand {
@@ -382,8 +385,8 @@ textarea.form-input { font-family: var(--font); }
   .mobile-nav::-webkit-scrollbar { display: none; }
 
   .mobile-nav-item {
-    flex: 0 0 72px;
-    min-width: 72px;
+    flex: 0 0 64px;
+    min-width: 64px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -415,3 +418,43 @@ textarea.form-input { font-family: var(--font); }
   }
 
 }
+
+/* ── Dark mode on mobile body ── */
+[data-theme="dark"] .main-content,
+[data-theme="dark"] .page {
+  background: #0F172A !important;
+}
+
+[data-theme="dark"] .card {
+  background: #1E293B !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+[data-theme="dark"] .stat-card {
+  background: #1E293B !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+[data-theme="dark"] .stat-card .stat-label { color: rgba(255,255,255,0.5) !important; }
+[data-theme="dark"] .page-title { color: #EEF2FF !important; }
+[data-theme="dark"] .page-subtitle { color: rgba(255,255,255,0.45) !important; }
+[data-theme="dark"] .card-title { color: #EEF2FF !important; }
+[data-theme="dark"] .text-muted { color: rgba(255,255,255,0.45) !important; }
+
+[data-theme="dark"] .table-wrap {
+  background: #1E293B !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+[data-theme="dark"] table thead tr { background: #0F172A !important; }
+[data-theme="dark"] table th { color: rgba(255,255,255,0.5) !important; }
+[data-theme="dark"] table td { color: #EEF2FF !important; }
+[data-theme="dark"] table tr:nth-child(even) { background: rgba(255,255,255,0.03) !important; }
+
+[data-theme="dark"] .form-input {
+  background: rgba(255,255,255,0.05) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: #EEF2FF !important;
+}
+
+[data-theme="dark"] .form-label { color: rgba(255,255,255,0.65) !important; }
