@@ -4,6 +4,11 @@ export type AttendanceStatus = 'present' | 'absent' | 'halfday'
 export type LeaveType = 'casual' | 'sick'
 export type LeaveStatus = 'pending' | 'approved' | 'rejected'
 
+export interface Holiday {
+  date: string
+  name: string
+}
+
 export interface SpareFromOffice { name: string; qty: string }
 export interface SpareFromOutside { name: string; qty: string; cost: number }
 export interface SpareRequired { name: string; reason: string }
@@ -32,6 +37,11 @@ export interface AttendanceRecord {
   user?: User
 }
 
+export interface LeaveBalance {
+  casual: number
+  sick: number
+}
+
 export interface LeaveRequest {
   id: string; user_id: string; leave_type: LeaveType
   from_date: string; to_date: string; reason: string
@@ -48,6 +58,7 @@ export interface MonthlyReportRow {
   employee_id: string; name: string; department: string | null
   total_present: number; total_absent: number; total_halfday: number
   total_leave: number; total_office_visits: number
+  working_days: number
 }
 
 export interface AuditLog {
