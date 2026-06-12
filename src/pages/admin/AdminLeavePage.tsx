@@ -71,7 +71,9 @@ export default function AdminLeavePage() {
   }
 
   useEffect(() => {
-    setPage(1) load() }, [tab])
+    setPage(1)
+    load()
+  }, [tab])
 
   return (
     <>
