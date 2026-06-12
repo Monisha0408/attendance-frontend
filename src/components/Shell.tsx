@@ -23,7 +23,6 @@ export default function Shell({ children }: { children?: React.ReactNode }) {
     navigate('/login')
   }
 
-  // Employee: 5 tabs
   const employeeLinks = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Home' },
     { to: '/attendance', icon: Clock, label: 'Attendance' },
@@ -32,7 +31,6 @@ export default function Shell({ children }: { children?: React.ReactNode }) {
     { to: '/change-password', icon: KeyRound, label: 'Password' },
   ]
 
-  // Admin: more tabs — shown in sidebar on desktop, scrollable bottom nav on mobile
   const adminLinks = [
     { to: '/admin', icon: LayoutDashboard, label: 'Home' },
     { to: '/admin/users', icon: Users, label: 'Staff' },
@@ -86,6 +84,23 @@ export default function Shell({ children }: { children?: React.ReactNode }) {
         </div>
       </aside>
 
+      {/* ── Mobile top header — logo + name + logout ── */}
+      <div className="mobile-topbar">
+        <div className="mobile-topbar-left">
+          <img src={CB_LOGO} alt="CB" />
+          <div>
+            <div className="mobile-topbar-name">{user?.name}</div>
+            <div className="mobile-topbar-role">
+              {isSuperAdmin ? 'Super Admin' : isAdmin ? 'Sub Admin' : user?.employee_id}
+            </div>
+          </div>
+        </div>
+        <button className="mobile-logout-btn" onClick={handleLogout}>
+          <LogOut size={18} />
+          <span>Sign out</span>
+        </button>
+      </div>
+
       {/* ── Main content ── */}
       <main className="main-content">
         <div className="page">
@@ -93,7 +108,7 @@ export default function Shell({ children }: { children?: React.ReactNode }) {
         </div>
       </main>
 
-      {/* ── Mobile bottom nav — ALL tabs, horizontally scrollable ── */}
+      {/* ── Mobile bottom nav — all tabs, horizontally scrollable ── */}
       <nav className="mobile-nav">
         {links.map(({ to, icon: Icon, label }) => (
           <NavLink
