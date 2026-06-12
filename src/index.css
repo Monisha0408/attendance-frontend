@@ -166,3 +166,122 @@ tr:hover td { background: var(--bg); }
 
 /* Textarea inherits form-input but needs explicit font */
 textarea.form-input { font-family: var(--font); }
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE LAYOUT — bottom nav bar
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Hide desktop sidebar */
+  .sidebar { display: none !important; }
+
+  /* Full width main content with bottom padding for nav bar */
+  .main-content { padding-bottom: 64px; }
+  .page { padding: 1rem; }
+
+  /* Stats grid — 2 columns on mobile */
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Tables scroll horizontally */
+  .table-wrap { font-size: 0.78rem; }
+  th, td { padding: 0.6rem 0.5rem; }
+
+  /* Cards full width */
+  .card { border-radius: 10px; }
+
+  /* Form grids stack on mobile */
+  .form-grid-2 { grid-template-columns: 1fr !important; }
+}
+
+/* Bottom navigation bar — mobile only */
+.mobile-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #16213E;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    z-index: 100;
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .mobile-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    font-size: 0.6rem;
+    font-weight: 500;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.15s, background 0.15s;
+    border-top: 2px solid transparent;
+  }
+
+  .mobile-nav-item.active {
+    color: #fff;
+    border-top-color: #B91C1C;
+    background: rgba(255,255,255,0.05);
+  }
+
+  .mobile-nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Mobile top header bar */
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: #16213E;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .mobile-header-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-header-logo img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
+
+  .mobile-header-logo span {
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .mobile-header-user {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.6);
+    text-align: right;
+  }
+
+  .mobile-header-user strong {
+    display: block;
+    color: #fff;
+    font-size: 0.78rem;
+  }
+}

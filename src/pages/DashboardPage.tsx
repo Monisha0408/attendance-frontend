@@ -15,7 +15,10 @@ function getGreeting() {
 
 const EMPTY_FORM = {
   visited_office: null as boolean | null,
-  calls_assigned: '', calls_closed: '', calls_hold: '', calls_next_day: '',
+  calls_assigned: '',
+  calls_closed: '',
+  calls_hold: '0',      // ✅ default 0
+  calls_next_day: '0',  // ✅ default 0
   daily_update: '',
 }
 
@@ -73,7 +76,7 @@ export default function DashboardPage() {
     try {
       const { data } = await api.post('/attendance/checkin', {
         latitude: geo?.latitude ?? null, longitude: geo?.longitude ?? null,
-        location_name: geo?.location_name ?? null,
+        location_name: geo ? `${geo.location_name} [${geo.source === 'ip' ? 'IP' : 'GPS'}]` : null,
       })
       setRecord(data); setMessage('Checked in successfully!')
     } catch (e: any) { setError(e.response?.data?.detail || 'Check-in failed') }
@@ -82,12 +85,36 @@ export default function DashboardPage() {
 
   const validate = () => {
     const errs: Record<string, string> = {}
+
     if (form.visited_office === null) errs.visited_office = 'Required'
     if (form.calls_assigned === '') errs.calls_assigned = 'Required'
     if (form.calls_closed === '') errs.calls_closed = 'Required'
-    if (form.calls_hold === '') errs.calls_hold = 'Required (enter 0 if none)'
-    if (form.calls_next_day === '') errs.calls_next_day = 'Required (enter 0 if none)'
+    if (form.calls_hold === '') errs.calls_hold = 'Required'
+    if (form.calls_next_day === '') errs.calls_next_day = 'Required'
     if (!form.daily_update.trim()) errs.daily_update = 'Required'
+
+    // ✅ Rule: closed + hold + next_day must equal assigned
+    const assigned = Number(form.calls_assigned) || 0
+    const closed = Number(form.calls_closed) || 0
+    const hold = Number(form.calls_hold) || 0
+    const nextDay = Number(form.calls_next_day) || 0
+    const distributed = closed + hold + nextDay
+
+    if (form.calls_assigned !== '' && form.calls_closed !== '') {
+      if (distributed !== assigned) {
+        const diff = assigned - distributed
+        const msg = diff > 0
+          ? `Calls don't add up. You have ${diff} unaccounted call(s). Closed + Hold + Next day must equal Assigned (${assigned}).`
+          : `Calls exceed assigned. Closed + Hold + Next day (${distributed}) is ${Math.abs(diff)} more than Assigned (${assigned}).`
+        errs.calls_split = msg
+      }
+    }
+
+    // ✅ Rule: if outside spares added, bill upload is mandatory
+    if (sparesOutside.length > 0 && bills.length === 0) {
+      errs.bills = 'Bill upload is required when spares are purchased outside.'
+    }
+
     setFormErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -100,7 +127,7 @@ export default function DashboardPage() {
     try {
       const { data } = await api.post('/attendance/checkout', {
         latitude: geo?.latitude ?? null, longitude: geo?.longitude ?? null,
-        location_name: geo?.location_name ?? null,
+        location_name: geo ? `${geo.location_name} [${geo.source === 'ip' ? 'IP' : 'GPS'}]` : null,
         visited_office: form.visited_office,
         calls_assigned: Number(form.calls_assigned),
         calls_closed: Number(form.calls_closed),
@@ -260,17 +287,46 @@ export default function DashboardPage() {
             {/* ── 2. Call stats ── */}
             <div style={sectionStyle}>
               <div style={sectionTitle}>Call statistics <span style={{ color: 'var(--danger)' }}>*</span></div>
+
+              {/* ✅ Live split indicator */}
+              {form.calls_assigned !== '' && (
+                (() => {
+                  const assigned = Number(form.calls_assigned) || 0
+                  const closed = Number(form.calls_closed) || 0
+                  const hold = Number(form.calls_hold) || 0
+                  const nextDay = Number(form.calls_next_day) || 0
+                  const distributed = closed + hold + nextDay
+                  const diff = assigned - distributed
+                  const isOk = diff === 0
+                  const color = isOk ? 'var(--success)' : 'var(--danger)'
+                  const bg = isOk ? 'var(--success-bg)' : 'var(--danger-bg)'
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0.5rem 0.75rem', background: bg, borderRadius: 7, marginBottom: '0.75rem', fontSize: '0.82rem', color }}>
+                      <span>{isOk ? '✓' : '✗'}</span>
+                      <span>
+                        Closed ({closed}) + Hold ({hold}) + Next day ({nextDay}) = <strong>{distributed}</strong>
+                        {!isOk && <> — {diff > 0 ? `${diff} unaccounted` : `${Math.abs(diff)} over assigned`} out of <strong>{assigned}</strong> assigned</>}
+                        {isOk && <> — matches {assigned} assigned ✓</>}
+                      </span>
+                    </div>
+                  )
+                })()
+              )}
+
+              {formErrors.calls_split && (
+                <div className="alert alert-error" style={{ marginBottom: '0.75rem' }}>{formErrors.calls_split}</div>
+              )}
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 {[
                   { key: 'calls_assigned', label: 'Calls assigned' },
                   { key: 'calls_closed', label: 'Calls closed' },
-                  { key: 'calls_hold', label: 'Calls on hold', hint: '0 if none' },
-                  { key: 'calls_next_day', label: 'Shifted to next day', hint: '0 if none' },
-                ].map(({ key, label, hint }) => (
+                  { key: 'calls_hold', label: 'Calls on hold' },
+                  { key: 'calls_next_day', label: 'Shifted to next day' },
+                ].map(({ key, label }) => (
                   <div key={key}>
                     <label className="form-label">
                       {label} <span style={{ color: 'var(--danger)' }}>*</span>
-                      {hint && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 400 }}> ({hint})</span>}
                     </label>
                     <input className="form-input" type="number" min="0"
                       value={form[key as keyof typeof form] as string}
@@ -340,7 +396,19 @@ export default function DashboardPage() {
             {/* ── 6. Bill upload ── */}
             {sparesOutside.length > 0 && (
               <div style={sectionStyle}>
-                <div style={sectionTitle}>Upload bills <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-muted)' }}>(JPG, PNG or PDF, max 5MB each)</span></div>
+                <div style={sectionTitle}>
+                  Upload bills <span style={{ color: 'var(--danger)' }}>*</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-muted)' }}> (JPG, PNG or PDF, max 5MB each)</span>
+                </div>
+                {/* ✅ Required notice */}
+                {bills.length === 0 && (
+                  <div style={{ fontSize: '0.8rem', color: 'var(--danger)', background: 'var(--danger-bg)', padding: '0.4rem 0.75rem', borderRadius: 6, marginBottom: 8 }}>
+                    ⚠ Bill upload is required since you added outside purchases.
+                  </div>
+                )}
+                {formErrors.bills && (
+                  <div className="form-error" style={{ marginBottom: 8 }}>{formErrors.bills}</div>
+                )}
                 <input ref={fileRef} type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={handleFileUpload} />
                 <button type="button" className="btn" onClick={() => fileRef.current?.click()} disabled={uploadingBill}>
                   <Upload size={14} /> {uploadingBill ? 'Uploading…' : 'Upload bill'}
@@ -356,6 +424,11 @@ export default function DashboardPage() {
                         </button>
                       </div>
                     ))}
+                  </div>
+                )}
+                {bills.length > 0 && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--success)', marginTop: 6 }}>
+                    ✓ {bills.length} bill{bills.length > 1 ? 's' : ''} uploaded
                   </div>
                 )}
               </div>
