@@ -14,6 +14,8 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
 }
 
 export default function AuditLogsPage() {
+  const PAGE_SIZE = 20
+  const [page, setPage] = useState(1)
   const [logs, setLogs] = useState<AuditLog[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')

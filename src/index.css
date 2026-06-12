@@ -93,7 +93,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); font
 /* Table */
 .table-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border); }
 table { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 0.875rem; }
-th { padding: 0.75rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); background: var(--bg); }
+th { padding: 0.75rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.85) !important; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #1E3A5F; background: #1E3A5F !important; }
 td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: var(--bg); }
@@ -162,7 +162,7 @@ tr:hover td { background: var(--bg); }
   /* ✅ Force block — prevents sidebar from stealing half the screen */
   .app-shell { display: block !important; min-height: 100vh; }
   .sidebar { display: none !important; width: 0 !important; }
-  .main-content { width: 100% !important; max-width: 100% !important; overflow-x: hidden; }
+  .main-content { width: 100% !important; max-width: 100% !important; overflow-x: hidden; padding-bottom: 72px; }
   .page { padding: 1rem; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   /* Mobile top header */
@@ -271,8 +271,8 @@ textarea.form-input { font-family: var(--font); }
     border-radius: 12px !important;
   }
 
-  table thead tr { background: #1E293B !important; }
-  table th { color: rgba(255,255,255,0.75) !important; font-weight: 600 !important; }
+  table thead tr { background: #1E3A5F !important; }
+  table th { color: rgba(255,255,255,0.85) !important; font-weight: 600 !important; }
   table td { color: #1E293B !important; }
   table tr:nth-child(even) { background: #F8FAFC !important; }
 
@@ -449,9 +449,10 @@ textarea.form-input { font-family: var(--font); }
   border-color: rgba(255,255,255,0.08) !important;
 }
 
-[data-theme="dark"] table thead tr { background: #0F172A !important; }
-[data-theme="dark"] table th { color: rgba(255,255,255,0.7) !important; font-weight: 600 !important; }
-[data-theme="dark"] table td { color: #EEF2FF !important; }
+[data-theme="dark"] table thead tr { background: #1E3A5F !important; }
+[data-theme="dark"] table th { color: rgba(255,255,255,0.9) !important; font-weight: 600 !important; }
+[data-theme="dark"] table td { color: #E2E8F0 !important; }
+[data-theme="dark"] table tr:hover td { background: rgba(255,255,255,0.04) !important; }
 [data-theme="dark"] table tr:nth-child(even) { background: rgba(255,255,255,0.03) !important; }
 
 [data-theme="dark"] .form-input {

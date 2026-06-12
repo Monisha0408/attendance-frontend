@@ -60,6 +60,8 @@ export default function AdminLeavePage() {
   const isSuperAdmin = me?.is_superadmin === true
 
   const [tab, setTab] = useState<'pending' | 'all'>('pending')
+  const PAGE_SIZE = 15
+  const [page, setPage] = useState(1)
   const [leaves, setLeaves] = useState<LeaveRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState<{ leave: LeaveRequest; action: 'approve' | 'reject' } | null>(null)
