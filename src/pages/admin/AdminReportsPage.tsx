@@ -53,8 +53,8 @@ export default function AdminReportsPage() {
     absent: acc.absent + r.total_absent,
     halfday: acc.halfday + r.total_halfday,
     leave: acc.leave + r.total_leave,
-    wfh: acc.wfh + r.total_wfh,
-  }), { present: 0, absent: 0, halfday: 0, leave: 0, wfh: 0 })
+    office: acc.office + r.total_office_visits,
+  }), { present: 0, absent: 0, halfday: 0, leave: 0, office: 0 })
 
   return (
     <>
@@ -97,7 +97,7 @@ export default function AdminReportsPage() {
               <th style={{ textAlign: 'center' }}>Absent</th>
               <th style={{ textAlign: 'center' }}>Half day</th>
               <th style={{ textAlign: 'center' }}>Leave</th>
-              <th style={{ textAlign: 'center' }}>WFH days</th>
+              <th style={{ textAlign: 'center' }}>Office visits</th>
             </tr>
           </thead>
           <tbody>
@@ -118,7 +118,7 @@ export default function AdminReportsPage() {
                     <td style={{ textAlign: 'center' }}><span style={{ color: 'var(--danger)', fontWeight: 600 }}>{r.total_absent}</span></td>
                     <td style={{ textAlign: 'center' }}><span style={{ color: 'var(--warning)', fontWeight: 600 }}>{r.total_halfday}</span></td>
                     <td style={{ textAlign: 'center' }}>{r.total_leave}</td>
-                    <td style={{ textAlign: 'center' }}>{r.total_wfh}</td>
+                    <td style={{ textAlign: 'center' }}>{r.total_office_visits}</td>
                   </tr>
                 ))}
                 <tr style={{ borderTop: '2px solid var(--border-strong)', fontWeight: 600, background: 'var(--bg)' }}>
@@ -128,7 +128,7 @@ export default function AdminReportsPage() {
                   <td style={{ textAlign: 'center', color: 'var(--danger)' }}>{totals.absent}</td>
                   <td style={{ textAlign: 'center', color: 'var(--warning)' }}>{totals.halfday}</td>
                   <td style={{ textAlign: 'center' }}>{totals.leave}</td>
-                  <td style={{ textAlign: 'center' }}>{totals.wfh}</td>
+                  <td style={{ textAlign: 'center' }}>{totals.office}</td>
                 </tr>
               </>
             )}

@@ -37,7 +37,7 @@ export default function AdminDashboardPage() {
           <div className="stat-card present"><div className="stat-label">Present today</div><div className="stat-value">{stats.present_today}</div></div>
           <div className="stat-card absent"><div className="stat-label">Absent</div><div className="stat-value">{stats.absent_today}</div></div>
           <div className="stat-card leave"><div className="stat-label">On leave</div><div className="stat-value">{stats.on_leave_today}</div></div>
-          <div className="stat-card wfh"><div className="stat-label">Working from home</div><div className="stat-value">{stats.wfh_today}</div></div>
+          <div className="stat-card wfh"><div className="stat-label">Visited office</div><div className="stat-value">{stats.office_today}</div></div>
         </div>
       )}
 
