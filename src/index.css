@@ -235,9 +235,44 @@ textarea.form-input { font-family: var(--font); }
   /* Hide desktop sidebar */
   .sidebar { display: none !important; }
 
-  /* Gap for fixed header (52px) + bottom nav (60px) */
-  .main-content { padding-bottom: 68px; }
+  /* Gap for bottom nav */
+  .main-content { padding-bottom: 68px; background: #16213E; }
   .page { padding: 1rem; }
+
+  /* Light body background on mobile */
+  .main-content { background: #EEF2FF; }
+  .page { background: #EEF2FF; }
+
+  /* White raised cards on mobile */
+  .card {
+    background: #fff !important;
+    border: 0.5px solid #CBD5E1 !important;
+    border-radius: 12px !important;
+  }
+
+  /* Stat cards on mobile */
+  .stat-card {
+    background: #fff !important;
+    border: 0.5px solid #CBD5E1 !important;
+    border-radius: 10px !important;
+  }
+
+  /* Page header text on light bg */
+  .page-title { color: #1E293B !important; }
+  .page-subtitle { color: #64748B !important; }
+
+  /* Table wrap on mobile */
+  .table-wrap {
+    background: #fff !important;
+    border: 0.5px solid #CBD5E1 !important;
+    border-radius: 12px !important;
+  }
+
+  table thead tr { background: #F1F5F9 !important; }
+  table th { color: #475569 !important; }
+  table td { color: #1E293B !important; }
+  table tr:nth-child(even) { background: #F8FAFC !important; }
+
 
   /* Stats */
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -246,15 +281,15 @@ textarea.form-input { font-family: var(--font); }
   .table-wrap { overflow-x: auto; font-size: 0.78rem; }
   th, td { padding: 0.5rem; }
 
-  /* ── Top header bar ── */
+  /* ── Top nav bar — same style as bottom nav ── */
   .mobile-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 52px;
+    height: 60px;
     background: #16213E;
-    padding: 0 1rem;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 0 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -263,12 +298,13 @@ textarea.form-input { font-family: var(--font); }
   .mobile-header-brand {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    padding: 0 0.5rem;
   }
 
   .mobile-header-brand img {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     object-fit: contain;
   }
 
@@ -280,29 +316,51 @@ textarea.form-input { font-family: var(--font); }
 
   .mobile-header-title {
     color: #EEF2FF;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     font-weight: 700;
   }
 
   .mobile-header-sub {
-    color: rgba(255,255,255,0.45);
-    font-size: 0.65rem;
+    color: rgba(255,255,255,0.4);
+    font-size: 0.6rem;
   }
 
-  /* Logout icon — top right */
+  /* Logout — styled exactly like a nav item */
   .mobile-header-logout {
+    flex: 0 0 72px;
+    min-width: 72px;
+    height: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    background: rgba(185,28,28,0.2);
-    border: 1px solid rgba(185,28,28,0.35);
-    color: #FCA5A5;
+    gap: 3px;
+    color: rgba(255,255,255,0.45);
+    background: none;
+    border: none;
+    border-top: 2px solid transparent;
     cursor: pointer;
-    flex-shrink: 0;
+    font-size: 0.58rem;
+    font-weight: 500;
+    padding: 0;
   }
+
+  .mobile-header-logout:active {
+    color: #FCA5A5;
+    background: rgba(185,28,28,0.15);
+  }
+
+  /* Stat card text on white mobile cards */
+  .stat-card .stat-label { color: #64748B !important; }
+  .stat-card.present .stat-value { color: #059669 !important; }
+  .stat-card.absent .stat-value  { color: #DC2626 !important; }
+  .stat-card.leave .stat-value   { color: #D97706 !important; }
+  .stat-card.wfh .stat-value     { color: #1D4ED8 !important; }
+
+  /* Card title on light bg */
+  .card-title { color: #1E293B !important; }
+  .text-muted  { color: #64748B !important; }
+
 
   /* ── Bottom nav bar ── */
   .mobile-nav {

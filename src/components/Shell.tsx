@@ -84,19 +84,21 @@ export default function Shell({ children }: { children?: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* ── Mobile header ── */}
+      {/* ── Mobile top nav bar — same style as bottom nav ── */}
       <header className="mobile-header">
         <div className="mobile-header-brand">
           <img src={CB_LOGO} alt="CB" />
           <div className="mobile-header-text">
             <span className="mobile-header-title">CB Enterprises</span>
             <span className="mobile-header-sub">
-              {isSuperAdmin ? 'Super Admin' : isAdmin ? 'Sub Admin' : user?.employee_id}
+              {isSuperAdmin ? 'Super Admin' : isAdmin ? 'Sub Admin' : user?.name}
             </span>
           </div>
         </div>
-        <button className="mobile-header-logout" onClick={handleLogout} title="Sign out">
-          <LogOut size={17} />
+        {/* Logout styled as a nav item */}
+        <button className="mobile-header-logout" onClick={handleLogout}>
+          <LogOut size={20} />
+          <span>Logout</span>
         </button>
       </header>
 
