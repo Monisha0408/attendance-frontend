@@ -159,7 +159,10 @@ tr:hover td { background: var(--bg); }
 .password-warn { font-size: 0.8rem; color: var(--danger); margin-top: 0.25rem; }
 
 @media (max-width: 768px) {
-  .sidebar { display: none; }
+  /* ✅ Force block — prevents sidebar from stealing half the screen */
+  .app-shell { display: block !important; min-height: 100vh; }
+  .sidebar { display: none !important; width: 0 !important; }
+  .main-content { width: 100% !important; max-width: 100% !important; overflow-x: hidden; }
   .page { padding: 1rem; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   /* Mobile top header */
