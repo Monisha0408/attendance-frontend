@@ -67,12 +67,13 @@ export default function AdminDailyUpdatesPage() {
           </button>
           <input
             type="date"
-          className="form-input"
-          style={{ width: 'auto' }}
-          value={date}
-          max={format(today, 'yyyy-MM-dd')}
-          onChange={e => setDate(e.target.value)}
+            className="form-input"
+            style={{ width: 'auto' }}
+            value={date}
+            max={format(today, 'yyyy-MM-dd')}
+            onChange={e => setDate(e.target.value)}
           />
+        </div>
         </div>
       </div>
 

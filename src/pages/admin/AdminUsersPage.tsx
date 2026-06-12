@@ -230,8 +230,12 @@ export default function AdminUsersPage() {
             {isSuperAdmin ? 'Super admin — full access' : 'Sub-admin — employee management only'}
           </div>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-          <Plus size={15} /> Add employee
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn" onClick={() => setShowInactive(v => !v)} style={{ fontSize: '0.82rem' }}>
+            {showInactive ? 'Hide inactive' : 'Show inactive'}
+          </button>
+          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
+            <Plus size={15} /> Add employee
           </button>
         </div>
       </div>

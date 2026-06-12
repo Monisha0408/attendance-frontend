@@ -79,13 +79,14 @@ export default function AdminAttendancePage() {
                 <th>Mode</th>
                 <th>Hours</th>
                 <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={10} className="loading">Loading…</td></tr>
+                <tr><td colSpan={11} className="loading">Loading…</td></tr>
               ) : records.length === 0 ? (
-                <tr><td colSpan={10} className="empty">No records for this month</td></tr>
+                <tr><td colSpan={11} className="empty">No records for this month</td></tr>
               ) : records.map(r => {
                 let hours = '—'
                 if (r.checkin_time && r.checkout_time) {
@@ -128,7 +129,7 @@ export default function AdminAttendancePage() {
                     </tr>
                     {isExpanded && r.daily_update && (
                       <tr>
-                        <td colSpan={10} style={{ background: 'var(--primary-light)', padding: '0.75rem 1rem' }}>
+                        <td colSpan={11} style={{ background: 'var(--primary-light)', padding: '0.75rem 1rem' }}>
                           <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--primary)', marginBottom: 4 }}>DAILY UPDATE</div>
                           <div style={{ fontSize: '0.875rem' }}>{r.daily_update}</div>
                         </td>
