@@ -74,7 +74,6 @@ export default function AdminDailyUpdatesPage() {
             onChange={e => setDate(e.target.value)}
           />
         </div>
-        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
