@@ -168,31 +168,25 @@ tr:hover td { background: var(--bg); }
 textarea.form-input { font-family: var(--font); }
 
 /* ═══════════════════════════════════════════════════════
-   MOBILE LAYOUT — bottom nav bar
+   MOBILE LAYOUT — scrollable bottom nav, no hamburger
    ═══════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   /* Hide desktop sidebar */
   .sidebar { display: none !important; }
 
-  /* Full width main content with bottom padding for nav bar */
+  /* Space at bottom for nav bar */
   .main-content { padding-bottom: 64px; }
   .page { padding: 1rem; }
 
-  /* Stats grid — 2 columns on mobile */
+  /* Stats grid — 2 columns */
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
 
   /* Tables scroll horizontally */
-  .table-wrap { font-size: 0.78rem; }
-  th, td { padding: 0.6rem 0.5rem; }
-
-  /* Cards full width */
-  .card { border-radius: 10px; }
-
-  /* Form grids stack on mobile */
-  .form-grid-2 { grid-template-columns: 1fr !important; }
+  .table-wrap { overflow-x: auto; font-size: 0.78rem; }
+  th, td { padding: 0.5rem 0.5rem; }
 }
 
-/* Bottom navigation bar — mobile only */
+/* ── Mobile bottom nav bar ── */
 .mobile-nav {
   display: none;
 }
@@ -208,27 +202,37 @@ textarea.form-input { font-family: var(--font); }
     background: #16213E;
     border-top: 1px solid rgba(255,255,255,0.1);
     z-index: 100;
-    align-items: stretch;
-    padding: 0;
+    /* ✅ Horizontal scroll so ALL tabs are accessible */
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* hide scrollbar Firefox */
+  }
+
+  .mobile-nav::-webkit-scrollbar {
+    display: none; /* hide scrollbar Chrome/Safari */
   }
 
   .mobile-nav-item {
-    flex: 1;
+    /* ✅ Fixed minimum width so items don't compress */
+    flex: 0 0 72px;
+    min-width: 72px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 3px;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,255,255,0.45);
     text-decoration: none;
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     font-weight: 500;
     border: none;
     background: none;
     cursor: pointer;
     padding: 0;
-    transition: color 0.15s, background 0.15s;
     border-top: 2px solid transparent;
+    transition: color 0.15s;
+    white-space: nowrap;
   }
 
   .mobile-nav-item.active {
@@ -240,48 +244,8 @@ textarea.form-input { font-family: var(--font); }
   .mobile-nav-item svg {
     width: 20px;
     height: 20px;
-  }
-
-  /* Mobile top header bar */
-  .mobile-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 1rem;
-    background: #16213E;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    position: sticky;
-    top: 0;
-    z-index: 50;
-  }
-
-  .mobile-header-logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .mobile-header-logo img {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
-  }
-
-  .mobile-header-logo span {
-    color: #fff;
-    font-size: 0.9rem;
-    font-weight: 700;
-  }
-
-  .mobile-header-user {
-    font-size: 0.72rem;
-    color: rgba(255,255,255,0.6);
-    text-align: right;
-  }
-
-  .mobile-header-user strong {
-    display: block;
-    color: #fff;
-    font-size: 0.78rem;
+    flex-shrink: 0;
   }
 }
+
+/* Textarea inherits form-input but needs explicit font */

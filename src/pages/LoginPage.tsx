@@ -17,7 +17,6 @@ export default function LoginPage() {
     try {
       const { user, must_change_password } = await login(email, password)
       if (must_change_password) {
-        // ✅ Force to change password — can't go anywhere else
         navigate('/change-password', { replace: true })
       } else {
         navigate(user.role === 'admin' ? '/admin' : '/dashboard', { replace: true })
@@ -28,62 +27,226 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#16213E' }}>
-      <div style={{
-        width: '42%', background: '#16213E', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', padding: '2rem',
-        position: 'relative', overflow: 'hidden', borderRight: '1px solid rgba(255,255,255,0.06)',
-      }}>
-        <div style={{ position: 'absolute', top: '25%', left: '50%', transform: 'translateX(-50%)', width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '15%', right: '10%', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(185,28,28,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <img src={CB_LOGO} alt="CB Enterprises" style={{ width: 180, height: 'auto', objectFit: 'contain', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }} />
-        <h1 style={{ color: '#EEF2FF', fontSize: '1.6rem', fontWeight: 800, textAlign: 'center', lineHeight: 1.2, marginBottom: 8, letterSpacing: '-0.02em', position: 'relative', zIndex: 1 }}>CB Enterprises</h1>
-        <p style={{ color: 'rgba(238,242,255,0.5)', fontSize: '0.78rem', textAlign: 'center', lineHeight: 2, position: 'relative', zIndex: 1 }}>V-Guard · CCTV · Surveillance · Security</p>
-        <p style={{ color: 'rgba(238,242,255,0.25)', fontSize: '0.72rem', textAlign: 'center', position: 'relative', zIndex: 1, marginTop: 2 }}>Redhills, Chennai — 52</p>
-        <div style={{ display: 'flex', gap: 6, marginTop: '1.75rem', position: 'relative', zIndex: 1 }}>
-          <div style={{ width: 28, height: 3, borderRadius: 2, background: '#B91C1C' }} />
-          <div style={{ width: 28, height: 3, borderRadius: 2, background: '#3B82F6' }} />
-          <div style={{ width: 28, height: 3, borderRadius: 2, background: '#10B981' }} />
-        </div>
-      </div>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', background: '#1C2B4A' }}>
-        <div style={{ width: '100%', maxWidth: 380 }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#EEF2FF', marginBottom: 4 }}>Sign in</h2>
-          <p style={{ color: 'rgba(238,242,255,0.38)', fontSize: '0.875rem', marginBottom: '1.75rem' }}>Enter your credentials to access the portal</p>
-          <div style={{ background: '#223460', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '1.25rem' }}>
-            {error && (
-              <div style={{ background: 'rgba(185,28,28,0.15)', border: '1px solid rgba(185,28,28,0.3)', color: '#FCA5A5', padding: '0.75rem 1rem', borderRadius: 8, fontSize: '0.875rem', marginBottom: '1rem' }}>
-                {error}
-              </div>
-            )}
-            <form onSubmit={handleSubmit} noValidate>
-              <div style={{ marginBottom: '1rem' }}>
-                <label htmlFor="email" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'rgba(238,242,255,0.65)', marginBottom: '0.4rem' }}>Email address</label>
-                <input id="email" name="email" type="email" value={email} onChange={e => setEmail(e.target.value)}
-                  placeholder="you@cbenterprises.in" required autoFocus
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: '0.9rem', color: '#EEF2FF', background: 'rgba(255,255,255,0.05)', outline: 'none', boxSizing: 'border-box' }}
-                  onFocus={e => e.target.style.borderColor = '#3B82F6'}
-                  onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-                />
-              </div>
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label htmlFor="password" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'rgba(238,242,255,0.65)', marginBottom: '0.4rem' }}>Password</label>
-                <input id="password" name="password" type="password" value={password} onChange={e => setPassword(e.target.value)}
-                  placeholder="Your password" required
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, fontSize: '0.9rem', color: '#EEF2FF', background: 'rgba(255,255,255,0.05)', outline: 'none', boxSizing: 'border-box' }}
-                  onFocus={e => e.target.style.borderColor = '#3B82F6'}
-                  onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-                />
-              </div>
-              <button type="submit" disabled={loading}
-                style={{ width: '100%', padding: '0.65rem', background: '#B91C1C', color: '#fff', border: 'none', borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-                {loading ? 'Signing in…' : 'Sign in'}
-              </button>
-            </form>
+    <>
+      <style>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .login-page {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          background: #1C2B4A;
+        }
+
+        /* ── Mobile: logo full width on top ── */
+        .login-brand {
+          background: #16213E;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 2.5rem 1.5rem 2rem;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .login-brand img {
+          width: 180px;
+          height: 180px;
+          object-fit: contain;
+          margin-bottom: 1rem;
+        }
+
+        .login-brand h1 {
+          color: #EEF2FF;
+          font-size: 1.5rem;
+          font-weight: 800;
+          text-align: center;
+          letter-spacing: -0.02em;
+          margin-bottom: 6px;
+        }
+
+        .login-brand .tagline {
+          color: rgba(238,242,255,0.5);
+          font-size: 0.8rem;
+          text-align: center;
+          line-height: 1.9;
+        }
+
+        .login-brand .city {
+          color: rgba(238,242,255,0.3);
+          font-size: 0.75rem;
+          text-align: center;
+          margin-top: 3px;
+        }
+
+        .login-brand .bars {
+          display: flex;
+          gap: 6px;
+          margin-top: 1.25rem;
+        }
+
+        .login-brand .bar {
+          width: 28px;
+          height: 3px;
+          border-radius: 2px;
+        }
+
+        /* ── Form section ── */
+        .login-form-wrap {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 2rem 1.5rem;
+        }
+
+        .login-form-inner {
+          width: 100%;
+          max-width: 420px;
+        }
+
+        .login-form-inner h2 {
+          font-size: 1.4rem;
+          font-weight: 700;
+          color: #EEF2FF;
+          margin-bottom: 4px;
+        }
+
+        .login-form-inner > p {
+          color: rgba(238,242,255,0.4);
+          font-size: 0.875rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .login-card {
+          background: #223460;
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 12px;
+          padding: 1.5rem;
+        }
+
+        .login-error {
+          background: rgba(185,28,28,0.15);
+          border: 1px solid rgba(185,28,28,0.3);
+          color: #FCA5A5;
+          padding: 0.75rem 1rem;
+          border-radius: 8px;
+          font-size: 0.875rem;
+          margin-bottom: 1rem;
+        }
+
+        .login-label {
+          display: block;
+          font-size: 0.875rem;
+          font-weight: 500;
+          color: rgba(238,242,255,0.65);
+          margin-bottom: 0.4rem;
+        }
+
+        .login-input {
+          width: 100%;
+          padding: 0.65rem 0.75rem;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 8px;
+          font-size: 1rem;
+          color: #EEF2FF;
+          background: rgba(255,255,255,0.05);
+          outline: none;
+          margin-bottom: 1rem;
+          transition: border-color 0.15s;
+        }
+
+        .login-input:focus { border-color: #3B82F6; }
+
+        .login-btn {
+          width: 100%;
+          padding: 0.75rem;
+          background: #B91C1C;
+          color: #fff;
+          border: none;
+          border-radius: 8px;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: opacity 0.15s;
+        }
+
+        .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .login-forgot {
+          text-align: center;
+          margin-top: 1rem;
+          font-size: 0.8rem;
+          color: rgba(238,242,255,0.25);
+        }
+
+        /* ── Desktop: side by side ── */
+        @media (min-width: 769px) {
+          .login-page { flex-direction: row; }
+
+          .login-brand {
+            width: 45%;
+            min-height: 100vh;
+            border-bottom: none;
+            border-right: 1px solid rgba(255,255,255,0.06);
+            padding: 3rem 2rem;
+          }
+
+          .login-brand img {
+            width: 220px;
+            height: 220px;
+          }
+
+          .login-brand h1 { font-size: 1.8rem; }
+        }
+      `}</style>
+
+      <div className="login-page">
+
+        {/* Brand panel */}
+        <div className="login-brand">
+          <img src={CB_LOGO} alt="CB Enterprises" />
+          <h1>CB Enterprises</h1>
+          <p className="tagline">V-Guard · CCTV · Surveillance · Security</p>
+          <p className="city">Redhills, Chennai — 52</p>
+          <div className="bars">
+            <div className="bar" style={{ background: '#B91C1C' }} />
+            <div className="bar" style={{ background: '#3B82F6' }} />
+            <div className="bar" style={{ background: '#10B981' }} />
           </div>
-          <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'rgba(238,242,255,0.22)' }}>Forgot your password? Contact your admin.</p>
         </div>
+
+        {/* Login form */}
+        <div className="login-form-wrap">
+          <div className="login-form-inner">
+            <h2>Sign in</h2>
+            <p>Enter your credentials to access the portal</p>
+            <div className="login-card">
+              {error && <div className="login-error">{error}</div>}
+              <form onSubmit={handleSubmit} noValidate>
+                <label htmlFor="email" className="login-label">Email address</label>
+                <input
+                  id="email" name="email" type="email" className="login-input"
+                  value={email} onChange={e => setEmail(e.target.value)}
+                  placeholder="you@cbenterprises.in" required autoFocus
+                />
+                <label htmlFor="password" className="login-label">Password</label>
+                <input
+                  id="password" name="password" type="password" className="login-input"
+                  style={{ marginBottom: '1.25rem' }}
+                  value={password} onChange={e => setPassword(e.target.value)}
+                  placeholder="Your password" required
+                />
+                <button type="submit" className="login-btn" disabled={loading}>
+                  {loading ? 'Signing in…' : 'Sign in'}
+                </button>
+              </form>
+            </div>
+            <p className="login-forgot">Forgot your password? Contact your admin.</p>
+          </div>
+        </div>
+
       </div>
-    </div>
+    </>
   )
 }
