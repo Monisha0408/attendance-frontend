@@ -12,19 +12,22 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Only auto-logout on 401 if it's NOT a known non-auth route
+// Auto-logout only on 401 from protected routes — never from /auth/login itself
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     const status = err.response?.status
     const url = err.config?.url || ''
 
-    // Only logout if 401 AND it's not a 404 on attendance/today (no record yet)
+    // ✅ Never auto-logout on login endpoint — wrong password returns 401 legitimately
+    const isLoginEndpoint = url.includes('/auth/login')
+    if (isLoginEndpoint) {
+      return Promise.reject(err)
+    }
+
     if (status === 401) {
-      // Don't logout if token exists and this might be a false positive
       const token = localStorage.getItem('token')
       if (token) {
-        // Check if token is expired by trying to parse it
         try {
           const payload = JSON.parse(atob(token.split('.')[1]))
           const isExpired = payload.exp * 1000 < Date.now()
@@ -33,7 +36,7 @@ api.interceptors.response.use(
             localStorage.removeItem('user')
             window.location.href = '/login'
           }
-          // If not expired, don't auto-logout — let the component handle it
+          // Not expired — don't logout, let component handle
         } catch {
           localStorage.removeItem('token')
           localStorage.removeItem('user')

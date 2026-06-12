@@ -23,7 +23,7 @@ interface BillFile { name: string; url: string; type: string }
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const { getPosition, loading: geoLoading, error: geoError } = useGeolocation()
+  const { getPosition, requestPermission, loading: geoLoading, error: geoError } = useGeolocation()
   const stored = localStorage.getItem('user')
   const resolvedUser = user || (stored ? JSON.parse(stored) : null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -50,7 +50,11 @@ export default function DashboardPage() {
     return () => clearInterval(t)
   }, [])
 
-  useEffect(() => { fetchToday() }, [])
+  useEffect(() => {
+    fetchToday()
+    // ✅ Request location permission early so browser prompts before check-in
+    requestPermission()
+  }, [])
 
   const fetchToday = async () => {
     try {

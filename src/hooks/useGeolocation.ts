@@ -13,6 +13,7 @@ export function useGeolocation() {
   const getPosition = (): Promise<GeoPosition | null> => {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
+        setError('Geolocation not supported by this browser.')
         resolve(null)
         return
       }
@@ -21,7 +22,6 @@ export function useGeolocation() {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords
-          // Reverse geocode using free nominatim API
           let location_name = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
           try {
             const res = await fetch(
@@ -30,7 +30,6 @@ export function useGeolocation() {
             )
             const data = await res.json()
             if (data.display_name) {
-              // Shorten: first two parts of address
               const parts = data.display_name.split(',')
               location_name = parts.slice(0, 3).join(',').trim()
             }
@@ -40,13 +39,32 @@ export function useGeolocation() {
         },
         (err) => {
           setLoading(false)
-          setError('Location access denied — check-in will proceed without location.')
-          resolve(null)
+          // ✅ Clear error message explaining what happened
+          if (err.code === 1) {
+            setError('Location permission denied. Check-in saved without location. To enable, click the lock icon in your browser address bar.')
+          } else if (err.code === 2) {
+            setError('Location unavailable. Check-in saved without location.')
+          } else {
+            setError('Location timed out. Check-in saved without location.')
+          }
+          resolve(null) // proceed without location
         },
-        { timeout: 8000, maximumAge: 60000 }
+        { timeout: 10000, maximumAge: 60000, enableHighAccuracy: true }
       )
     })
   }
 
-  return { getPosition, loading, error }
+  // ✅ Pre-request permission so browser prompt appears before check-in
+  const requestPermission = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) { resolve(false); return }
+      navigator.geolocation.getCurrentPosition(
+        () => resolve(true),
+        () => resolve(false),
+        { timeout: 5000 }
+      )
+    })
+  }
+
+  return { getPosition, requestPermission, loading, error }
 }

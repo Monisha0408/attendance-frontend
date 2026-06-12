@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import api from '../../utils/api'
 import { MonthlyReportRow } from '../../types'
 import { format, getMonth, getYear } from 'date-fns'
-import { Download } from 'lucide-react'
+import { Download, FileSpreadsheet, FileText, FileType } from 'lucide-react'
 
 export default function AdminReportsPage() {
   const now = new Date()
@@ -10,10 +10,9 @@ export default function AdminReportsPage() {
   const [year, setYear] = useState(getYear(now))
   const [rows, setRows] = useState<MonthlyReportRow[]>([])
   const [loading, setLoading] = useState(false)
-  const [exportLoading, setExportLoading] = useState(false)
+  const [exportLoading, setExportLoading] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [exportError, setExportError] = useState('')
-
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i)
 
   const load = () => {
@@ -27,8 +26,8 @@ export default function AdminReportsPage() {
 
   useEffect(() => { load() }, [month, year])
 
-  const exportFile = async (fmt: 'xlsx' | 'csv') => {
-    setExportLoading(true)
+  const exportFile = async (fmt: 'xlsx' | 'pdf' | 'docx') => {
+    setExportLoading(fmt)
     setExportError('')
     try {
       const res = await api.get('/reports/export', {
@@ -44,7 +43,7 @@ export default function AdminReportsPage() {
     } catch {
       setExportError('Export failed. Please try again.')
     } finally {
-      setExportLoading(false)
+      setExportLoading(null)
     }
   }
 
@@ -61,14 +60,35 @@ export default function AdminReportsPage() {
       <div className="page-header flex items-center justify-between">
         <div>
           <div className="page-title">Reports</div>
-          <div className="page-subtitle">Monthly attendance summary — export to Excel or CSV</div>
+          <div className="page-subtitle">Monthly attendance summary</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn" onClick={() => exportFile('xlsx')} disabled={exportLoading}>
-            <Download size={14} /> Excel
+          <button
+            className="btn"
+            onClick={() => exportFile('xlsx')}
+            disabled={exportLoading !== null}
+            title="Download Excel"
+          >
+            <FileSpreadsheet size={14} color="#0F6E56" />
+            {exportLoading === 'xlsx' ? 'Downloading…' : 'Excel'}
           </button>
-          <button className="btn" onClick={() => exportFile('csv')} disabled={exportLoading}>
-            <Download size={14} /> CSV
+          <button
+            className="btn"
+            onClick={() => exportFile('pdf')}
+            disabled={exportLoading !== null}
+            title="Download PDF"
+          >
+            <FileType size={14} color="#B91C1C" />
+            {exportLoading === 'pdf' ? 'Downloading…' : 'PDF'}
+          </button>
+          <button
+            className="btn"
+            onClick={() => exportFile('docx')}
+            disabled={exportLoading !== null}
+            title="Download Word document"
+          >
+            <FileText size={14} color="#185FA5" />
+            {exportLoading === 'docx' ? 'Downloading…' : 'Word'}
           </button>
         </div>
       </div>
