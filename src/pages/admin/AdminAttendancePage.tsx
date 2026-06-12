@@ -22,6 +22,8 @@ export default function AdminAttendancePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 20
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i)
 
   useEffect(() => {
@@ -30,6 +32,7 @@ export default function AdminAttendancePage() {
 
   useEffect(() => {
     if (!selectedUser) return
+    setPage(1)
     setLoading(true)
     setError('')
     api.get(`/attendance/admin/user/${selectedUser}`, { params: { month, year } })

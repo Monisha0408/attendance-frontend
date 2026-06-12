@@ -271,8 +271,8 @@ textarea.form-input { font-family: var(--font); }
     border-radius: 12px !important;
   }
 
-  table thead tr { background: #F1F5F9 !important; }
-  table th { color: #475569 !important; }
+  table thead tr { background: #1E293B !important; }
+  table th { color: rgba(255,255,255,0.75) !important; font-weight: 600 !important; }
   table td { color: #1E293B !important; }
   table tr:nth-child(even) { background: #F8FAFC !important; }
 
@@ -388,8 +388,8 @@ textarea.form-input { font-family: var(--font); }
   .mobile-nav::-webkit-scrollbar { display: none; }
 
   .mobile-nav-item {
-    flex: 0 0 64px;
-    min-width: 64px;
+    flex: 0 0 58px;
+    min-width: 58px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -450,7 +450,7 @@ textarea.form-input { font-family: var(--font); }
 }
 
 [data-theme="dark"] table thead tr { background: #0F172A !important; }
-[data-theme="dark"] table th { color: rgba(255,255,255,0.5) !important; }
+[data-theme="dark"] table th { color: rgba(255,255,255,0.7) !important; font-weight: 600 !important; }
 [data-theme="dark"] table td { color: #EEF2FF !important; }
 [data-theme="dark"] table tr:nth-child(even) { background: rgba(255,255,255,0.03) !important; }
 

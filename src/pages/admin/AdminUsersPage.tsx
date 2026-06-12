@@ -177,6 +177,8 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 15
   const [resetUser, setResetUser] = useState<User | null>(null)
 
   const [showInactive, setShowInactive] = useState(false)
@@ -246,7 +248,7 @@ export default function AdminUsersPage() {
           className="form-input"
           placeholder="Search by name or employee ID…"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => { setSearch(e.target.value); setPage(1) }}
           style={{ maxWidth: 320 }}
         />
       </div>
@@ -271,7 +273,7 @@ export default function AdminUsersPage() {
                 !search ||
                 u.name.toLowerCase().includes(search.toLowerCase()) ||
                 u.employee_id.toLowerCase().includes(search.toLowerCase())
-              ).map(u => (
+              ).slice((page-1)*PAGE_SIZE, page*PAGE_SIZE).map(u => (
               <tr key={u.id}>
                 <td className="font-mono" style={{ fontSize: '0.85rem' }}>{u.employee_id}</td>
                 <td style={{ fontWeight: 500 }}>

@@ -11,6 +11,8 @@ export default function MyUpdatesPage() {
   const [records, setRecords] = useState<AttendanceRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 10
   const years = Array.from({ length: 3 }, (_, i) => now.getFullYear() - 1 + i)
 
   useEffect(() => {
@@ -84,7 +86,7 @@ export default function MyUpdatesPage() {
               <tr><td colSpan={9} className="loading">Loading…</td></tr>
             ) : records.length === 0 ? (
               <tr><td colSpan={9} className="empty">No checkout records for this month</td></tr>
-            ) : records.map(r => {
+            ) : records.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE).map(r => {
               const isExp = expanded === r.id
               return (
                 <React.Fragment key={r.id}>
@@ -122,6 +124,13 @@ export default function MyUpdatesPage() {
           </tbody>
         </table>
       </div>
+      {Math.ceil(records.length / PAGE_SIZE) > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: '1rem' }}>
+          <button className="btn btn-sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
+          <span style={{ lineHeight: '32px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Page {page}/{Math.ceil(records.length/PAGE_SIZE)}</span>
+          <button className="btn btn-sm" disabled={page >= Math.ceil(records.length/PAGE_SIZE)} onClick={() => setPage(p => p + 1)}>Next →</button>
+        </div>
+      )}
       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 8 }}>
         Click any row to expand the daily update summary
       </div>

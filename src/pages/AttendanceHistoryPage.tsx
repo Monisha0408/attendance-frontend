@@ -92,11 +92,6 @@ export default function AttendanceHistoryPage() {
               const r = recordMap.get(ds)
               const isFuture = day > now
 
-              // Check if there's a holiday leave record for this day
-              const holidayLeave = !isNonWorking && records.find(rec =>
-                rec.date === ds && !rec.checkin_time
-              )
-
               if (isNonWorking) {
                 return (
                   <tr key={ds} style={{ background: 'rgba(99,102,241,0.05)' }}>

@@ -32,12 +32,12 @@ export default function AdminDashboardPage() {
       {error && <div className="alert alert-error">{error}</div>}
 
       {stats && (
-        <div className="stats-grid">
+        <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
           <div className="stat-card"><div className="stat-label">Total employees</div><div className="stat-value">{stats.total_employees}</div></div>
-          <div className="stat-card present"><div className="stat-label">Present today</div><div className="stat-value">{stats.present_today}</div></div>
-          <div className="stat-card absent"><div className="stat-label">Absent</div><div className="stat-value">{stats.absent_today}</div></div>
-          <div className="stat-card leave"><div className="stat-label">On leave</div><div className="stat-value">{stats.on_leave_today}</div></div>
-          <div className="stat-card wfh"><div className="stat-label">Visited office</div><div className="stat-value">{stats.office_today}</div></div>
+          <div className="stat-card present"><div className="stat-label">Present today</div><div className="stat-value" style={{ color: 'var(--success)' }}>{stats.present_today}</div></div>
+          <div className="stat-card absent"><div className="stat-label">Absent</div><div className="stat-value" style={{ color: 'var(--danger)' }}>{stats.absent_today}</div></div>
+          <div className="stat-card leave"><div className="stat-label">On leave</div><div className="stat-value" style={{ color: 'var(--warning)' }}>{stats.on_leave_today}</div></div>
+          <div className="stat-card wfh" style={{ gridColumn: 'span 2' }}><div className="stat-label">Visited office today</div><div className="stat-value" style={{ color: 'var(--info)' }}>{stats.office_today}</div></div>
         </div>
       )}
 

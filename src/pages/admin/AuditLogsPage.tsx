@@ -51,7 +51,7 @@ export default function AuditLogsPage() {
               <tr><td colSpan={4} className="loading">Loading…</td></tr>
             ) : logs.length === 0 ? (
               <tr><td colSpan={4} className="empty">No audit logs yet</td></tr>
-            ) : logs.map(log => {
+            ) : logs.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE).map(log => {
               const meta = ACTION_LABELS[log.action] || { label: log.action, color: 'var(--text-muted)' }
               return (
                 <tr key={log.id}>
@@ -71,6 +71,15 @@ export default function AuditLogsPage() {
           </tbody>
         </table>
       </div>
+      {Math.ceil(logs.length / PAGE_SIZE) > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: '1rem' }}>
+          <button className="btn btn-sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
+          <span style={{ lineHeight: '32px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            Page {page} / {Math.ceil(logs.length / PAGE_SIZE)}
+          </span>
+          <button className="btn btn-sm" disabled={page >= Math.ceil(logs.length / PAGE_SIZE)} onClick={() => setPage(p => p + 1)}>Next →</button>
+        </div>
+      )}
     </>
   )
 }

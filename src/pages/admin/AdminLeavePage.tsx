@@ -70,7 +70,8 @@ export default function AdminLeavePage() {
     api.get(url).then(r => setLeaves(r.data)).finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [tab])
+  useEffect(() => {
+    setPage(1) load() }, [tab])
 
   return (
     <>
@@ -92,6 +93,16 @@ export default function AdminLeavePage() {
         <button className={`btn ${tab === 'all' ? 'btn-primary' : ''}`} onClick={() => setTab('all')}>All requests</button>
       </div>
 
+      {/* Pagination top */}
+      {Math.ceil(leaves.length / PAGE_SIZE) > 1 && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+          <button className="btn btn-sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
+          <span style={{ lineHeight: '32px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            Page {page} / {Math.ceil(leaves.length / PAGE_SIZE)}
+          </span>
+          <button className="btn btn-sm" disabled={page >= Math.ceil(leaves.length / PAGE_SIZE)} onClick={() => setPage(p => p + 1)}>Next →</button>
+        </div>
+      )}
       <div className="table-wrap">
         <table>
           <thead>

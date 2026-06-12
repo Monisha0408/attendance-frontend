@@ -12,6 +12,8 @@ const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
 
 export default function LeaveHistoryPage() {
   const [leaves, setLeaves] = useState<LeaveRequest[]>([])
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 10
   const [balance, setBalance] = useState<LeaveBalance | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -70,7 +72,7 @@ export default function LeaveHistoryPage() {
               <tr><td colSpan={7} className="empty">
                 No leave requests yet. <Link to="/leave/apply" style={{ color: 'var(--primary)' }}>Apply now</Link>
               </td></tr>
-            ) : leaves.map(l => {
+            ) : leaves.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE).map(l => {
               const days = Math.ceil((new Date(l.to_date).getTime() - new Date(l.from_date).getTime()) / 86400000) + 1
               const sc = STATUS_COLORS[l.status] || STATUS_COLORS.pending
               return (
@@ -84,11 +86,7 @@ export default function LeaveHistoryPage() {
                     <span style={{ background: sc.bg, color: sc.color, padding: '2px 8px', borderRadius: 4, fontSize: '0.78rem', fontWeight: 600, textTransform: 'capitalize' }}>
                       {l.status}
                     </span>
-                    {l.reason?.startsWith('Public Holiday') && (
-                      <span style={{ marginLeft: 4, fontSize: '0.68rem', background: 'rgba(124,58,237,0.1)', color: '#7C3AED', padding: '1px 6px', borderRadius: 4 }}>
-                        Holiday
-                      </span>
-                    )}
+
                   </td>
                   <td style={{ fontSize: '0.82rem' }}>
                     {l.status === 'rejected' && l.admin_note
@@ -105,6 +103,13 @@ export default function LeaveHistoryPage() {
           </tbody>
         </table>
       </div>
+      {Math.ceil(leaves.length / PAGE_SIZE) > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: '1rem' }}>
+          <button className="btn btn-sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
+          <span style={{ lineHeight: '32px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Page {page}/{Math.ceil(leaves.length/PAGE_SIZE)}</span>
+          <button className="btn btn-sm" disabled={page >= Math.ceil(leaves.length/PAGE_SIZE)} onClick={() => setPage(p => p + 1)}>Next →</button>
+        </div>
+      )}
     </>
   )
 }

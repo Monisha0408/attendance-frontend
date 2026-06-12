@@ -12,6 +12,8 @@ export default function AdminDailyUpdatesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 20
   const [exporting, setExporting] = useState<string | null>(null)
 
   const exportUpdates = async (fmt: 'pdf' | 'xlsx') => {
@@ -205,7 +207,14 @@ export default function AdminDailyUpdatesPage() {
       </div>
 
       {records.length > 0 && (
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 8 }}>
+        {Math.ceil(records.length / PAGE_SIZE) > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: '1rem' }}>
+          <button className="btn btn-sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
+          <span style={{ lineHeight: '32px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Page {page}/{Math.ceil(records.length/PAGE_SIZE)}</span>
+          <button className="btn btn-sm" disabled={page >= Math.ceil(records.length/PAGE_SIZE)} onClick={() => setPage(p => p + 1)}>Next →</button>
+        </div>
+      )}
+      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 8 }}>
           Click any row to expand the major update summary
         </div>
       )}
